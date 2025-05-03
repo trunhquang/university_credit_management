@@ -21,7 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   // Test Ad Unit IDs
   static final String _testRewardedAdUnitId = Platform.isAndroid
-      ? 'ca-app-pub-3940256099942544/5224354917'
+      ? 'ca-app-pub-5958322053700133/8107412073'
       : 'ca-app-pub-5958322053700133/6273727285';
 
   final ProgramService _programService = ProgramService();
