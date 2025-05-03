@@ -1,15 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/program_overview.dart';
 import '../widgets/missing_credits_warning.dart';
+import '../widgets/language_dropdown.dart';
 import '../services/program_service.dart';
 import '../services/course_service.dart';
+import '../services/ad_manager.dart';
+import '../l10n/language_manager.dart';
+import '../theme/app_colors.dart';
 import 'course_screen.dart';
 import 'progress_screen.dart';
 import 'settings_screen.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:flutter/foundation.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -19,13 +22,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Test Ad Unit IDs
-  static final String _testRewardedAdUnitId = Platform.isAndroid
-      ? 'ca-app-pub-5958322053700133/8107412073'
-      : 'ca-app-pub-5958322053700133/6273727285';
-
   final ProgramService _programService = ProgramService();
   final CourseService _courseService = CourseService();
+  final AdManager _adManager = AdManager();
+  late final LanguageManager _languageManager;
 
   Map<String, dynamic>? progress;
   Map<String, dynamic>? missingCredits;
@@ -34,13 +34,28 @@ class _HomeScreenState extends State<HomeScreen> {
   String errorMessage = '';
   Map<String, dynamic>? englishCert;
 
-  // Thêm thuộc tính để quản lý quảng cáo
-  RewardedAd? _rewardedAd;
-  bool _isLoadingAd = false;
+  @override
+  void initState() {
+    super.initState();
+    _languageManager = Provider.of<LanguageManager>(context, listen: false);
+    _languageManager.addListener(_onLanguageChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshState();
+    });
+  }
+
+  @override
+  void dispose() {
+    _languageManager.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    setState(() {});
+  }
 
   Future<void> _refreshState() async {
     if (!mounted) return;
-
     await _loadData();
   }
 
@@ -66,20 +81,9 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(builder: (context) => screen),
     );
 
-    // Refresh toàn bộ trạng thái khi quay lại
     if (mounted) {
       await _refreshState();
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // Khởi tạo Mobile Ads SDK
-    MobileAds.instance.initialize();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _refreshState();
-    });
   }
 
   Future<void> _loadData() async {
@@ -91,20 +95,14 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     try {
-      // Load settings first to get useSampleData state
       final settings = await _programService.getSettings();
-
-      // Lấy danh sách sections để tính toán tổng số tín chỉ
       final sections = await _programService.getSections();
       
-      // Tính toán tổng số tín chỉ từ tất cả các sections
       final totalRequiredCredits = sections
           .fold(0, (sum, section) => sum + section.requiredCredits);
       final totalOptionalCredits = sections
           .fold(0, (sum, section) => sum + section.optionalCredits);
       final totalCredits = totalRequiredCredits + totalOptionalCredits;
-
-
 
       final programProgress = await _programService.getProgress(totalCredits);
       final missingRequiredCredits = await _programService.getMissingRequiredCredits();
@@ -113,20 +111,17 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         setState(() {
           progress = programProgress;
-
           englishCert = {
-            'type': settings.englishCertType.displayName,
+            'type': settings.englishCertType.getDisplayName(_languageManager.currentStrings),
             'score': settings.englishScore,
             'required': settings.englishCertType.minScore,
           };
-
           missingCredits = {
             'hasMissingCredits': missingRequiredCredits['hasMissingCredits'] as bool? ?? false,
             'sections': (missingRequiredCredits['sections'] as List<dynamic>?)?.map((section) {
               return Map<String, dynamic>.from(section as Map<String, dynamic>);
             }).toList() ?? [],
           };
-          
           gpa = calculatedGpa;
           isLoading = false;
         });
@@ -141,57 +136,17 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Thêm phương thức để load quảng cáo
   void _loadRewardedAd() {
-    if (_isLoadingAd) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đang tải dữ liệu, vui lòng đợi...'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isLoadingAd = true);
-
-    RewardedAd.load(
-      adUnitId: _testRewardedAdUnitId,
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          _rewardedAd = ad;
-          _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-            onAdDismissedFullScreenContent: (ad) {
-              ad.dispose();
-              _rewardedAd = null;
-              // Tải quảng cáo mới cho lần sau
-              _loadRewardedAd();
-            },
-            onAdFailedToShowFullScreenContent: (ad, error) {
-              ad.dispose();
-              _rewardedAd = null;
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Không thể hiển thị quảng cáo. Vui lòng thử lại sau.'),
-                ),
-              );
-            },
-          );
-
-          setState(() => _isLoadingAd = false);
-          _showSupportDialog();
-        },
-        onAdFailedToLoad: (LoadAdError error) {
-          debugPrint('Lỗi tải quảng cáo: ${error.message}');
-          setState(() => _isLoadingAd = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Không thể tải quảng cáo. Vui lòng thử lại sau.'),
-            ),
-          );
-        },
-      ),
+    _adManager.loadRewardedAd(
+      context: context,
+      onAdLoaded: _showSupportDialog,
+      onAdFailed: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_languageManager.currentStrings.adLoadFailed),
+          ),
+        );
+      },
     );
   }
 
@@ -201,9 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.favorite, color: Colors.red),
+            Icon(Icons.favorite, color: AppColors.support),
             SizedBox(width: 8),
-            Text('Ủng hộ tác giả'),
+            Text(_languageManager.currentStrings.supportAuthor),
           ],
         ),
         content: Column(
@@ -211,48 +166,46 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Cảm ơn bạn đã quan tâm đến việc ủng hộ tác giả! ❤️',
+              _languageManager.currentStrings.thankYouForSupport,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
             SizedBox(height: 12),
-            Text(
-              'Bạn có thể ủng hộ bằng cách xem một quảng cáo ngắn. '
-              'Điều này sẽ giúp tác giả có thêm động lực phát triển ứng dụng tốt hơn.',
-            ),
+            Text(_languageManager.currentStrings.supportDescription),
             SizedBox(height: 16),
-            if (_isLoadingAd)
+            if (_adManager.isLoadingAd)
               Center(
                 child: Column(
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 8),
-                    Text('Đang tải quảng cáo...'),
+                    Text(_languageManager.currentStrings.loadingAd),
                   ],
                 ),
               )
-            else if (_rewardedAd != null)
+            else if (_adManager.isAdReady)
               Center(
                 child: ElevatedButton.icon(
                   icon: Icon(Icons.play_circle_outline),
-                  label: Text('Xem quảng cáo để ủng hộ'),
+                  label: Text(_languageManager.currentStrings.watchAdToSupport),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: AppColors.progress,
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    _rewardedAd?.show(
-                      onUserEarnedReward: (ad, reward) {
+                    _adManager.showRewardedAd(
+                      context: context,
+                      onRewardEarned: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text(
-                              '❤️ Cảm ơn bạn đã ủng hộ! Chúc bạn học tập tốt!',
+                              _languageManager.currentStrings.thankYouMessage,
                               style: TextStyle(fontSize: 16),
                             ),
-                            backgroundColor: Colors.green,
+                            backgroundColor: AppColors.progress,
                             duration: Duration(seconds: 3),
                           ),
                         );
@@ -266,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Đóng'),
+            child: Text(_languageManager.currentStrings.close),
           ),
         ],
       ),
@@ -277,7 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Quản lý tín chỉ'),
+        title: Text(_languageManager.currentStrings.appName),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
       ),
       body: RefreshIndicator(
         onRefresh: _loadData,
@@ -300,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadData,
-              child: const Text('Thử lại'),
+              child: Text(_languageManager.currentStrings.retry),
             ),
           ],
         ),
@@ -332,24 +287,24 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               _buildNavigationCard(
                 context,
-                'Môn học',
+                _languageManager.currentStrings.courses,
                 Icons.school,
                 '/courses',
-                Colors.blue,
+                AppColors.courses,
               ),
               _buildNavigationCard(
                 context,
-                'Tiến độ',
+                _languageManager.currentStrings.progress,
                 Icons.timeline,
                 '/progress',
-                Colors.green,
+                AppColors.progress,
               ),
               _buildNavigationCard(
                 context,
-                'Cài đặt',
+                _languageManager.currentStrings.settings,
                 Icons.settings,
                 '/settings',
-                Colors.orange,
+                AppColors.settings,
               ),
               _buildSupportCard(),
             ],
@@ -360,19 +315,19 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 Text(
-                  'Mọi đóng góp xin gửi về: trunhquang9@gmail.com',
+                  _languageManager.currentStrings.contactEmail,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: AppColors.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 4),
                 Text(
-                  'Xin chân thành cảm ơn bạn đã sử dụng ứng dụng!',
+                  _languageManager.currentStrings.thankYouForUsing,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.grey,
+                    color: AppColors.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -429,8 +384,8 @@ class _HomeScreenState extends State<HomeScreen> {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.red.shade100,
-                Colors.pink.shade50,
+                AppColors.supportGradientStart,
+                AppColors.supportGradientEnd,
               ],
             ),
           ),
@@ -440,15 +395,15 @@ class _HomeScreenState extends State<HomeScreen> {
               Icon(
                 Icons.favorite,
                 size: 48,
-                color: Colors.red,
+                color: AppColors.support,
               ),
               const SizedBox(height: 8),
               Text(
-                'Ủng hộ tác giả',
+                _languageManager.currentStrings.supportAuthor,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.red.shade700,
+                  color: AppColors.support,
                 ),
               ),
               Text(

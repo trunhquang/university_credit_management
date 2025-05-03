@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../l10n/language_manager.dart';
 
 class ProgramOverview extends StatelessWidget {
-  final Map<String, dynamic> progress;
+  final Map<String, dynamic>? progress;
   final double gpa;
-  final Map<String, dynamic> englishCert;
+  final Map<String, dynamic>? englishCert;
 
   const ProgramOverview({
     super.key,
@@ -14,18 +16,19 @@ class ProgramOverview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final percentage = (progress['percentage'] as num).toDouble();
-    final totalCredits = progress['totalCredits'] as int;
-    final completedCredits = progress['completedCredits'] as int;
-    final remainingCredits = progress['remainingCredits'] as int;
+    final languageManager = Provider.of<LanguageManager>(context);
+    final percentage = (progress?['percentage'] as num?)?.toDouble() ?? 0;
+    final totalCredits = progress?['totalCredits'] as int?;
+    final completedCredits = progress?['completedCredits'] as int?;
+    final remainingCredits = progress?['remainingCredits'] as int? ;
 
-    final inProgressCredits = (progress['inProgressCredits'] as int?) ?? 0;
-    final completedRequiredCredits = (progress['completedRequiredCredits'] as int?) ?? 0;
-    final completedOptionalCredits = (progress['completedOptionalCredits'] as int?) ?? 0;
-    final inProgressRequiredCredits = (progress['inProgressRequiredCredits'] as int?) ?? 0;
-    final inProgressOptionalCredits = (progress['inProgressOptionalCredits'] as int?) ?? 0;
-    final totalRequiredCredits = (progress['totalRequiredCredits'] as int?) ?? 0;
-    final totalOptionalCredits = (progress['totalOptionalCredits'] as int?) ?? 0;
+    final inProgressCredits = (progress?['inProgressCredits'] as int?) ?? 0;
+    final completedRequiredCredits = (progress?['completedRequiredCredits'] as int?) ?? 0;
+    final completedOptionalCredits = (progress?['completedOptionalCredits'] as int?) ?? 0;
+    final inProgressRequiredCredits = (progress?['inProgressRequiredCredits'] as int?) ?? 0;
+    final inProgressOptionalCredits = (progress?['inProgressOptionalCredits'] as int?) ?? 0;
+    final totalRequiredCredits = (progress?['totalRequiredCredits'] as int?) ?? 0;
+    final totalOptionalCredits = (progress?['totalOptionalCredits'] as int?) ?? 0;
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -34,9 +37,9 @@ class ProgramOverview extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tổng quan chương trình',
-              style: TextStyle(
+            Text(
+              languageManager.currentStrings.programOverview,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -45,7 +48,7 @@ class ProgramOverview extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Điểm trung bình:'),
+                Text(languageManager.currentStrings.gpa),
                 Text(
                   gpa.toStringAsFixed(2),
                   style: const TextStyle(
@@ -65,18 +68,19 @@ class ProgramOverview extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Tiến độ hoàn thành: ${percentage.toStringAsFixed(1)}%',
+              '${languageManager.currentStrings.completionProgress}: ${percentage.toStringAsFixed(1)}%',
               style: TextStyle(
                 color: percentage >= 100 ? Colors.green : Colors.blue,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            _buildSectionTitle('Tín chỉ'),
+            _buildSectionTitle(languageManager.currentStrings.credits),
             const SizedBox(height: 8),
             if (totalRequiredCredits > 0) ...[
               _buildDetailedCreditInfo(
-                'Tín chỉ bắt buộc:',
+                context,
+                languageManager.currentStrings.requiredCredits,
                 totalRequiredCredits,
                 completedRequiredCredits,
                 inProgressRequiredCredits,
@@ -85,7 +89,8 @@ class ProgramOverview extends StatelessWidget {
             ],
             if (totalOptionalCredits > 0) ...[
               _buildDetailedCreditInfo(
-                'Tín chỉ tự chọn:',
+                context,
+                languageManager.currentStrings.optionalCredits,
                 totalOptionalCredits,
                 completedOptionalCredits,
                 inProgressOptionalCredits,
@@ -93,16 +98,17 @@ class ProgramOverview extends StatelessWidget {
               const SizedBox(height: 8),
             ],
             _buildDetailedCreditInfo(
-              'Tổng số tín chỉ:',
-              totalCredits,
-              completedCredits,
+              context,
+              languageManager.currentStrings.totalCredits,
+              totalCredits ?? 0,
+              completedCredits ?? 0,
               inProgressCredits,
               isTotal: true,
             ),
             const SizedBox(height: 16),
-            _buildSectionTitle('Chứng chỉ tiếng Anh'),
+            _buildSectionTitle(languageManager.currentStrings.englishCertificate),
             const SizedBox(height: 8),
-            _buildEnglishCertInfo(),
+            _buildEnglishCertInfo(languageManager),
           ],
         ),
       ),
@@ -133,12 +139,14 @@ class ProgramOverview extends StatelessWidget {
   }
 
   Widget _buildDetailedCreditInfo(
+    BuildContext context,
     String label,
     int totalCredits,
     int completedCredits,
     int inProgressCredits, {
     bool isTotal = false,
   }) {
+    final languageManager = Provider.of<LanguageManager>(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -166,7 +174,7 @@ class ProgramOverview extends StatelessWidget {
                   ),
                 ),
               TextSpan(
-                text: '/$totalCredits tín chỉ',
+                text: '/$totalCredits ${languageManager.currentStrings.credits}',
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                   color: isTotal ? Colors.blue : null,
@@ -179,11 +187,11 @@ class ProgramOverview extends StatelessWidget {
     );
   }
 
-  Widget _buildEnglishCertInfo() {
-    final certType = englishCert['type'] as String;
-    final currentScore = englishCert['score'] as int?;
-    final requiredScore = englishCert['required'] as int;
-    final bool isPassed = currentScore != null && currentScore >= requiredScore;
+  Widget _buildEnglishCertInfo(LanguageManager languageManager) {
+    final certType = englishCert?['type'] as String?;
+    final currentScore = englishCert?['score'] as int?;
+    final requiredScore = englishCert?['required'] as int?;
+    final bool isPassed = currentScore != null && currentScore >= (requiredScore ?? 0);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,7 +199,7 @@ class ProgramOverview extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Loại chứng chỉ: $certType'),
+            Text('${languageManager.currentStrings.certificateType}: $certType'),
             Icon(
               isPassed ? Icons.check_circle : Icons.warning,
               color: isPassed ? Colors.green : Colors.orange,
@@ -203,7 +211,7 @@ class ProgramOverview extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Điểm yêu cầu:'),
+            Text(languageManager.currentStrings.requiredScore),
             Text(
               requiredScore.toString(),
               style: const TextStyle(fontWeight: FontWeight.bold),
@@ -214,9 +222,9 @@ class ProgramOverview extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Điểm đạt được:'),
+            Text(languageManager.currentStrings.achievedScore),
             Text(
-              currentScore?.toString() ?? 'Chưa có',
+              currentScore?.toString() ?? languageManager.currentStrings.noCertificate,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: currentScore == null 

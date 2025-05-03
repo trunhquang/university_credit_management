@@ -1,51 +1,51 @@
-import 'course.dart';
+import 'package:flutter/foundation.dart';
+import 'subsection.dart';
 
-class Section {
-  final String id;
+class Section with ChangeNotifier {
   final String name;
-  final int requiredCredits;
-  final int optionalCredits;
-  final List<Course> courses;
-  final String description;
+  final String id;
+  final List<Subsection> subsections = [];
 
-  Section({
-    required this.id,
-    required this.name,
-    required this.requiredCredits,
-    required this.optionalCredits,
-    required this.courses,
-    this.description = '',
-  });
+  Section(this.name, {String? id}) : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
-  int get completedCredits => courses
-      .where((course) => course.isPassed)
-      .fold(0, (sum, course) => sum + course.credits);
+  int get totalCredits => subsections.fold(0, (sum, subsection) => sum + subsection.totalCredits);
+  int get requiredCredits => subsections.fold(0, (sum, subsection) => sum + subsection.requiredCredits);
+  int get optionalCredits => subsections.fold(0, (sum, subsection) => sum + subsection.optionalCredits);
+  int get completedCredits => subsections.fold(0, (sum, subsection) => sum + subsection.completedCredits);
+  int get remainingCredits => requiredCredits - completedCredits;
+  double get progress => requiredCredits > 0 ? completedCredits / requiredCredits : 0;
 
-  int get remainingCredits => requiredCredits + optionalCredits - completedCredits;
+  void addSubsection(String name) {
+    subsections.add(Subsection(name));
+    notifyListeners();
+  }
 
-  double get progress => (completedCredits / (requiredCredits + optionalCredits)) * 100;
+  void removeSubsection(Subsection subsection) {
+    subsections.remove(subsection);
+    notifyListeners();
+  }
+
+  void addCourse(String name, int credits) {
+    if (subsections.isNotEmpty) {
+      subsections.last.addCourse(name, credits);
+    }
+  }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
-      'requiredCredits': requiredCredits,
-      'optionalCredits': optionalCredits,
-      'courses': courses.map((course) => course.toJson()).toList(),
-      'description': description,
+      'id': id,
+      'subsections': subsections.map((subsection) => subsection.toJson()).toList(),
     };
   }
 
   factory Section.fromJson(Map<String, dynamic> json) {
-    return Section(
-      id: json['id'],
-      name: json['name'],
-      requiredCredits: json['requiredCredits'],
-      optionalCredits: json['optionalCredits'],
-      description: json['description'] ?? '',
-      courses: (json['courses'] as List)
-          .map((courseJson) => Course.fromJson(courseJson))
-          .toList(),
-    );
+    final section = Section(json['name'], id: json['id']);
+    if (json['subsections'] != null) {
+      for (var subsectionJson in json['subsections']) {
+        section.subsections.add(Subsection.fromJson(subsectionJson));
+      }
+    }
+    return section;
   }
 } 

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/program_service.dart';
 import '../models/settings.dart';
+import '../l10n/language_manager.dart';
+import '../theme/app_colors.dart';
+import '../widgets/language_dropdown.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -16,16 +20,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _englishRequiredScoreController = TextEditingController();
   
   Settings _currentSettings = Settings.defaultSettings();
+  late final LanguageManager _languageManager;
 
   bool _isLoading = false;
   String _errorMessage = '';
 
-@override
+  @override
   void initState() {
     super.initState();
+    _languageManager = Provider.of<LanguageManager>(context, listen: false);
+    _languageManager.addListener(_onLanguageChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSettings();
     });
+  }
+
+  @override
+  void dispose() {
+    _englishScoreController.dispose();
+    _englishRequiredScoreController.dispose();
+    _languageManager.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    setState(() {});
   }
 
   Future<void> _loadSettings() async {
@@ -53,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = 'Lỗi khi tải cài đặt: $e';
+          _errorMessage = '${_languageManager.currentStrings.loadingSettingsError}: $e';
           _isLoading = false;
         });
       }
@@ -61,21 +80,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   @override
-  void dispose() {
-    _englishScoreController.dispose();
-    _englishRequiredScoreController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cài đặt'),
+        title: Text(_languageManager.currentStrings.settingsTitle),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.onPrimary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          LanguageDropdown(
+            currentLanguageCode: _languageManager.currentLanguageCode,
+            currentLanguage: _languageManager.currentLanguage,
+            getLanguageFlag: _languageManager.getLanguageFlag,
+            onLanguageChanged: _languageManager.changeLanguage,
+          ),
+        ],
       ),
       body: _buildBody(),
     );
@@ -96,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadSettings,
-              child: const Text('Thử lại'),
+              child: Text(_languageManager.currentStrings.retry),
             ),
           ],
         ),
@@ -117,7 +139,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _saveSettings,
-                child:  Text('Lưu cài đặt'),),
+                child: Text(_languageManager.currentStrings.saveSettings),
+              ),
             ),
             const SizedBox(height: 16),
             _buildEnglishRequirementInfo(),
@@ -131,89 +154,98 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Điều kiện tiếng Anh',
-          style: TextStyle(
+        Text(
+          _languageManager.currentStrings.englishRequirements,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 16),
         
-        DropdownButtonFormField<EnglishCertType>(
-          value: _currentSettings.englishCertType,
-          decoration: const InputDecoration(
-            labelText: 'Loại chứng chỉ',
-            border: OutlineInputBorder(),
-          ),
-          items: EnglishCertType.values.map((type) {
-            return DropdownMenuItem(
-              value: type,
-              child: Text(type.displayName),
-            );
-          }).toList(),
-          onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _currentSettings = _currentSettings.copyWith(
-                        englishCertType: value,
-                      );
-                      _englishRequiredScoreController.text = value.minScore.toString();
-                      _englishScoreController.text = '';
-                    });
-                  }
-                },
-        ),
+        _buildCertificateTypeDropdown(),
         const SizedBox(height: 16),
 
         TextFormField(
           controller: _englishRequiredScoreController,
-          decoration: const InputDecoration(
-            labelText: 'Điểm yêu cầu tối thiểu',
-            helperText: 'Điểm tối thiểu cần đạt được',
-            border: OutlineInputBorder(),
-          ),
-          keyboardType: TextInputType.number,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Vui lòng nhập điểm yêu cầu';
-            }
-            if (int.tryParse(value) == null) {
-              return 'Vui lòng nhập số hợp lệ';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-
-        TextFormField(
-          controller: _englishScoreController,
           decoration: InputDecoration(
-            labelText: 'Điểm ${_currentSettings.englishCertType.displayName} đạt được',
-            helperText: 'Điểm bạn đã đạt được (để trống nếu chưa có)',
+            labelText: _languageManager.currentStrings.minimumScore,
+            helperText: _languageManager.currentStrings.minimumScoreHelper,
             border: const OutlineInputBorder(),
           ),
           keyboardType: TextInputType.number,
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return null;
+              return _languageManager.currentStrings.pleaseEnterScore;
             }
-            final score = int.tryParse(value);
-            if (score == null) {
-              return 'Vui lòng nhập số hợp lệ';
-            }
-            final requiredScore = int.tryParse(_englishRequiredScoreController.text) ?? 0;
-            if (score < requiredScore) {
-              return 'Điểm phải lớn hơn hoặc bằng điểm yêu cầu ($requiredScore)';
+            if (int.tryParse(value) == null) {
+              return _languageManager.currentStrings.pleaseEnterValidNumber;
             }
             return null;
           },
         ),
+        const SizedBox(height: 16),
+
+        _buildScoreInput(),
 
         const SizedBox(height: 16),
         if (_englishScoreController.text.isNotEmpty)
           _buildEnglishScoreStatus(),
       ],
+    );
+  }
+
+  Widget _buildCertificateTypeDropdown() {
+    return DropdownButtonFormField<EnglishCertType>(
+      value: _currentSettings.englishCertType,
+      decoration: InputDecoration(
+        labelText: _languageManager.currentStrings.certificateType,
+      ),
+      items: EnglishCertType.values.map((type) {
+        return DropdownMenuItem<EnglishCertType>(
+          value: type,
+          child: Text(type.getDisplayName(_languageManager.currentStrings)),
+        );
+      }).toList(),
+      onChanged: (value) {
+        if (value != null) {
+          setState(() {
+            _currentSettings = _currentSettings.copyWith(
+              englishCertType: value,
+              englishRequiredScore: value.minScore,
+            );
+          });
+        }
+      },
+    );
+  }
+
+  Widget _buildScoreInput() {
+    return TextFormField(
+      initialValue: _currentSettings.englishScore?.toString() ?? '',
+      decoration: InputDecoration(
+        labelText: '${_languageManager.currentStrings.achievedScore} (${_currentSettings.englishCertType.getDisplayName(_languageManager.currentStrings)})',
+        helperText: _languageManager.currentStrings.achievedScoreHelper,
+      ),
+      keyboardType: TextInputType.number,
+      validator: (value) {
+        if (value == null || value.isEmpty) return null;
+        final score = int.tryParse(value);
+        if (score == null) {
+          return _languageManager.currentStrings.pleaseEnterValidNumber;
+        }
+        if (score < _currentSettings.englishRequiredScore) {
+          return _languageManager.currentStrings.scoreMustBeHigher;
+        }
+        return null;
+      },
+      onSaved: (value) {
+        if (value != null && value.isNotEmpty) {
+          _currentSettings = _currentSettings.copyWith(
+            englishScore: int.parse(value),
+          );
+        }
+      },
     );
   }
 
@@ -241,8 +273,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(width: 8),
           Text(
             isPassed 
-                ? 'Đã đạt yêu cầu tiếng Anh' 
-                : 'Chưa đạt yêu cầu tiếng Anh',
+                ? _languageManager.currentStrings.englishPassed
+                : _languageManager.currentStrings.englishNotPassed,
             style: TextStyle(
               color: isPassed ? Colors.green : Colors.orange,
               fontWeight: FontWeight.bold,
@@ -260,26 +292,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Yêu cầu chứng chỉ tiếng Anh',
-              style: TextStyle(
-                fontSize: 16,
+            Text(
+              _languageManager.currentStrings.englishRequirementInfo,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Sinh viên cần đạt một trong các chứng chỉ sau:',
-              style: TextStyle(fontStyle: FontStyle.italic),
-            ),
+            Text(_languageManager.currentStrings.englishRequirementDescription),
             const SizedBox(height: 8),
-            ...(EnglishCertType.values.map((type) => Padding(
-              padding: const EdgeInsets.only(left: 16, bottom: 4),
-              child: Text('• ${type.displayName}: ${type.minScore} điểm trở lên'),
-            ))),
+            _buildRequirementsInfo(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRequirementsInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _languageManager.currentStrings.englishRequirementInfo,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(_languageManager.currentStrings.englishRequirementDescription),
+        const SizedBox(height: 8),
+        ...EnglishCertType.values.map((type) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: Text('• ${type.getDisplayName(_languageManager.currentStrings)}: ${type.minScore} ${_languageManager.currentStrings.minimumScore}'),
+          );
+        }).toList(),
+      ],
     );
   }
 
@@ -298,8 +348,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Đã cập nhật cài đặt thành công'),
+            SnackBar(
+              content: Text(_languageManager.currentStrings.settingsSaved),
               backgroundColor: Colors.green,
             ),
           );
@@ -308,7 +358,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Lỗi khi lưu cài đặt: $e'),
+              content: Text('${_languageManager.currentStrings.settingsError}: $e'),
               backgroundColor: Colors.red,
             ),
           );

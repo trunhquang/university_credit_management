@@ -76,32 +76,33 @@ class CourseService {
   }
 
   Future<double> calculateOverallGPA() async {
-    try {
-      final sections = await _programService.getSections();
-      
-      double totalGradePoints = 0;
-      int totalCredits = 0;
-
-      // Tính tổng điểm và tổng tín chỉ cho các môn đã hoàn thành
-      for (var section in sections) {
-        for (var course in section.courses) {
-          if (course.grade != null && course.isPassed) {
-            totalGradePoints += (course.grade! * course.credits);
-            totalCredits += course.credits;
-          }
-        }
-      }
-
-      // Tránh chia cho 0
-      if (totalCredits == 0) {
-        return 0.0;
-      }
-
-      // Làm tròn đến 2 chữ số thập phân
-      return double.parse((totalGradePoints / totalCredits).toStringAsFixed(2));
-    } catch (e) {
-      print('Error calculating GPA: $e');
-      return 0.0;
-    }
+    // try {
+    //   final sections = await _programService.getSections();
+    //
+    //   double totalGradePoints = 0;
+    //   int totalCredits = 0;
+    //
+    //   // Tính tổng điểm và tổng tín chỉ cho các môn đã hoàn thành
+    //   for (var section in sections) {
+    //     for (var course in section.courses) {
+    //       if (course.grade != null && course.isPassed) {
+    //         totalGradePoints += (course.grade! * course.credits);
+    //         totalCredits += course.credits;
+    //       }
+    //     }
+    //   }
+    //
+    //   // Tránh chia cho 0
+    //   if (totalCredits == 0) {
+    //     return 0.0;
+    //   }
+    //
+    //   // Làm tròn đến 2 chữ số thập phân
+    //   return double.parse((totalGradePoints / totalCredits).toStringAsFixed(2));
+    // } catch (e) {
+    //   print('Error calculating GPA: $e');
+    //   return 0.0;
+    // }
+    return 0;
   }
 } 

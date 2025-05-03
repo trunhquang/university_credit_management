@@ -1,3 +1,5 @@
+import '../l10n/app_strings.dart';
+
 enum EnglishCertType {
   IELTS(minScore: 7),
   TOEFL(minScore: 550),
@@ -7,7 +9,7 @@ enum EnglishCertType {
   final int minScore;
   const EnglishCertType({required this.minScore});
 
-  String get displayName {
+  String getDisplayName(AppStrings strings) {
     switch (this) {
       case EnglishCertType.IELTS:
         return 'IELTS';
@@ -16,7 +18,7 @@ enum EnglishCertType {
       case EnglishCertType.TOEIC:
         return 'TOEIC';
       case EnglishCertType.NONE:
-        return 'Chưa có';
+        return strings.noCertificate;
     }
   }
 
@@ -94,5 +96,10 @@ class Settings {
   // Helper method to check if English requirement is met
   bool get isEnglishRequirementMet {
     return englishScore != null && englishScore! >= englishRequiredScore;
+  }
+
+  // Get status text based on language
+  String getStatusText(AppStrings strings) {
+    return isEnglishRequirementMet ? strings.englishPassed : strings.englishNotPassed;
   }
 } 

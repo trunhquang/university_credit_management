@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:provider/provider.dart';
+import 'l10n/language_manager.dart';
 import 'screens/home_screen.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Thêm thiết bị test
-  final RequestConfiguration configuration = RequestConfiguration(
-    testDeviceIds: ['b9d9046c1ae880e01a2b09c57dc9c597'], // Device ID của bạn
+  
+  // Initialize language manager
+  final languageManager = LanguageManager();
+  await languageManager.initialize();
+  
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: languageManager),
+      ],
+      child: const MyApp(),
+    ),
   );
-  MobileAds.instance.updateRequestConfiguration(configuration);
-  MobileAds.instance.initialize();
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,11 +25,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Quản lý tín chỉ',
+    final languageManager = Provider.of<LanguageManager>(context);
+    return MaterialApp(
+      title: languageManager.currentStrings.appName,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
       home: const HomeScreen(),

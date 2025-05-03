@@ -1,64 +1,93 @@
+import 'package:flutter/foundation.dart';
+
 enum CourseType {
   required,
-  optional
+  optional,
 }
 
 enum CourseStatus {
-  completed,
+  notStarted,
   inProgress,
-  notStarted
+  completed,
+  failed,
 }
 
-class Course {
-  final String id;
+class Course with ChangeNotifier {
   final String name;
+  final String id;
   final int credits;
-  final double? grade;
-  final bool isPassed;
   final CourseType type;
   final CourseStatus status;
-  final String prerequisiteCourses; // Môn học tiên quyết
+  bool _isCompleted = false;
+  double? _grade;
+  final List<String> prerequisiteCourses;
 
   Course({
-    required this.id,
     required this.name,
     required this.credits,
-    this.grade,
-    required this.isPassed,
-    required this.type,
-    required this.status,
-    this.prerequisiteCourses = '',
-  });
+    String? id,
+    this.type = CourseType.required,
+    this.status = CourseStatus.notStarted,
+    double? grade,
+    List<String>? prerequisiteCourses,
+  }) : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+       _grade = grade,
+       prerequisiteCourses = prerequisiteCourses ?? [];
+
+  bool get isCompleted => _isCompleted;
+  double? get grade => _grade;
+  bool get isPassed => _grade != null && _grade! >= 5.0;
+
+  void toggleCompleted() {
+    _isCompleted = !_isCompleted;
+    notifyListeners();
+  }
+
+  void setGrade(double grade) {
+    _grade = grade;
+    notifyListeners();
+  }
+
+  void addPrerequisite(String courseId) {
+    if (!prerequisiteCourses.contains(courseId)) {
+      prerequisiteCourses.add(courseId);
+      notifyListeners();
+    }
+  }
+
+  void removePrerequisite(String courseId) {
+    prerequisiteCourses.remove(courseId);
+    notifyListeners();
+  }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
+      'id': id,
       'credits': credits,
-      'grade': grade,
-      'isPassed': isPassed,
       'type': type.toString(),
       'status': status.toString(),
+      'isCompleted': _isCompleted,
+      'grade': _grade,
       'prerequisiteCourses': prerequisiteCourses,
     };
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      id: json['id'],
       name: json['name'],
+      id: json['id'],
       credits: json['credits'],
-      grade: json['grade'],
-      isPassed: json['isPassed'],
       type: CourseType.values.firstWhere(
         (e) => e.toString() == json['type'],
         orElse: () => CourseType.required,
       ),
       status: CourseStatus.values.firstWhere(
-        (e) => e.toString() == json['status'],
+        (status) => status.toString() == json['status'],
         orElse: () => CourseStatus.notStarted,
       ),
-      prerequisiteCourses: json['prerequisiteCourses'] ?? '',
-    );
+      grade: json['grade'],
+      prerequisiteCourses: (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
+    ).._isCompleted = json['isCompleted'] ?? false;
   }
 } 

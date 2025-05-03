@@ -35,7 +35,9 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     _creditsController = TextEditingController(text: course?.credits.toString());
     _gradeController = TextEditingController(text: course?.grade?.toString());
     _idController = TextEditingController(text: course?.id);
-    _prerequisiteController = TextEditingController(text: course?.prerequisiteCourses);
+    _prerequisiteController = TextEditingController(
+      text: course?.prerequisiteCourses.join(', '),
+    );
     
     if (course != null) {
       _type = course.type;
@@ -141,6 +143,9 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                     case CourseStatus.notStarted:
                       label = 'Chưa học';
                       break;
+                    case CourseStatus.failed:
+                      label = 'Đã trượt';
+                      break;
                   }
                   return DropdownMenuItem(value: status, child: Text(label));
                 }).toList(),
@@ -214,10 +219,11 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
         name: _nameController.text,
         credits: int.parse(_creditsController.text),
         grade: _gradeController.text.isEmpty ? null : double.parse(_gradeController.text),
-        isPassed: _isPassed,
         type: _type,
         status: _status,
-        prerequisiteCourses: _prerequisiteController.text,
+        prerequisiteCourses: _prerequisiteController.text.isEmpty 
+            ? [] 
+            : _prerequisiteController.text.split(',').map((e) => e.trim()).toList(),
       );
       Navigator.of(context).pop(course);
     }
