@@ -85,7 +85,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title: Text(_languageManager.currentStrings.settingsTitle),
         backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
+        foregroundColor: Colors.white,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

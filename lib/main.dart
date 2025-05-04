@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
     final languageManager = Provider.of<LanguageManager>(context);
     return MaterialApp(
       title: languageManager.currentStrings.appName,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,

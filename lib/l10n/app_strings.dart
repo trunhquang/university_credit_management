@@ -56,4 +56,15 @@ abstract class AppStrings {
   String get optionalCredits;
   String get englishCertificate;
   String get requiredScore;
+  String get edit;
+  String get delete;
+  String get confirmDelete;
+  String get sections;
+  String get noSections;
+  String get sectionAdded;
+  String get sectionUpdated;
+  String get sectionDeleted;
+  String deleteSectionConfirmation(String sectionName);
+  String get required;
+  String get optional;
 }

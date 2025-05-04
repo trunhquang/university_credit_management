@@ -14,14 +14,18 @@ class ProgramService {
 
   static const String _programKey = 'program';
   static const String _settingsKey = 'settings';
+  static const String _isFirstInstallKey = 'is_first_install';
 
   Future<void> init() async {
     if (!_initialized) {
       _prefs = await SharedPreferences.getInstance();
       _initialized = true;
-      // Chỉ khởi tạo dữ liệu mặc định nếu không có dữ liệu và đang ở chế độ dữ liệu thật
-      if (!_prefs.containsKey(_programKey)) {
+      
+      // Kiểm tra xem đây có phải là lần đầu cài đặt app không
+      final isFirstInstall = _prefs.getBool(_isFirstInstallKey) ?? true;
+      if (isFirstInstall) {
         await _initDefaultData();
+        await _prefs.setBool(_isFirstInstallKey, false);
       }
     }
   }
@@ -33,65 +37,42 @@ class ProgramService {
   }
 
   Future<void> _initDefaultData() async {
-    // final sections = [
-    //   Section(
-    //     id: '1',
-    //     name: 'Kiến thức giáo dục đại cương',
-    //     requiredCredits: 34,
-    //     optionalCredits: 22,
-    //     description: 'Các môn học cơ bản, rèn luyện tư duy và kỹ năng',
-    //     courses: [
-    //       Course(
-    //         id: 'ВAA00101',
-    //         name: 'Triết học Mác-Lênin',
-    //         credits: 3,
-    //         grade: 0,
-    //         isPassed: false,
-    //         type: CourseType.required,
-    //         status: CourseStatus.notStarted,
-    //       )
-    //     ], // Bắt đầu với danh sách rỗng
-    //   ),
-    //   Section(
-    //     id: '2',
-    //     name: 'Kiến thức cơ sở ngành',
-    //     requiredCredits: 38,
-    //     optionalCredits: 0,
-    //     description: 'Nền tảng cho chuyên ngành',
-    //     courses: [], // Bắt đầu với danh sách rỗng
-    //   ),
-    //   Section(
-    //     id: '3',
-    //     name: 'Kiến thức chuyên ngành',
-    //     requiredCredits: 0,
-    //     optionalCredits:34,
-    //     description: 'Kiến thức chuyên sâu về ngành học',
-    //     courses: [], // Bắt đầu với danh sách rỗng
-    //   ),
-    //   Section(
-    //     id: '3',
-    //     name: 'Kiến thức Tốt nghiệp',
-    //     requiredCredits: 0,
-    //     optionalCredits:10,
-    //     description: 'Kiến thức tổng hợp tốt nghiệp',
-    //     courses: [], // Bắt đầu với danh sách rỗng
-    //   )
-    // ];
+    final sections = [
+      Section(
+        name: 'Kiến thức giáo dục đại cương',
+        requiredCredits: 34,
+        optionalCredits: 22,
+        description: 'Các môn học cơ bản, rèn luyện tư duy và kỹ năng',
+        id: '1',
+      ),
+      Section(
+        name: 'Kiến thức cơ sở ngành',
+        requiredCredits: 38,
+        optionalCredits: 0,
+        description: 'Nền tảng cho chuyên ngành',
+        id: '2',
+      ),
+      Section(
+        name: 'Kiến thức chuyên ngành',
+        requiredCredits: 0,
+        optionalCredits: 34,
+        description: 'Kiến thức chuyên sâu về ngành học',
+        id: '3',
+      ),
+      Section(
+        name: 'Kiến thức Tốt nghiệp',
+        requiredCredits: 0,
+        optionalCredits: 10,
+        description: 'Kiến thức tổng hợp tốt nghiệp',
+        id: '4',
+      )
+    ];
     
-    // await saveSections(sections);
+    await saveSections(sections);
   }
-
-
-
 
   Future<List<Section>> getSections() async {
     final sectionsJson = _prefs.getStringList(_programKey) ?? [];
-    if (sectionsJson.isEmpty) {
-      // await _initDefaultData();
-      // return getSections();
-      return [];
-    }
-    
     return sectionsJson.map((json) => Section.fromJson(jsonDecode(json))).toList();
   }
 

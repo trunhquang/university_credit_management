@@ -17,52 +17,47 @@ class LanguageDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PopupMenuButton<String>(
-      icon: Row(
-        children: [
-          Text(
-            getLanguageFlag(currentLanguageCode),
-            style: const TextStyle(fontSize: 20),
-          ),
-          const SizedBox(width: 4),
-          Text(
-            currentLanguage,
-            style: TextStyle(
-              color: AppColors.onPrimary,
-              fontSize: 14,
+    return IconButton(
+      icon: Text(
+        getLanguageFlag(currentLanguageCode),
+        style: const TextStyle(fontSize: 20),
+      ),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Chọn ngôn ngữ'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Text(
+                    getLanguageFlag('vi'),
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  title: const Text('Tiếng Việt'),
+                  onTap: () {
+                    onLanguageChanged('vi');
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  leading: Text(
+                    getLanguageFlag('en'),
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  title: const Text('English'),
+                  onTap: () {
+                    onLanguageChanged('en');
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      onSelected: onLanguageChanged,
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
-          value: 'en',
-          child: Row(
-            children: [
-              Text(
-                getLanguageFlag('en'),
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              const Text('English'),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'vi',
-          child: Row(
-            children: [
-              Text(
-                getLanguageFlag('vi'),
-                style: const TextStyle(fontSize: 20),
-              ),
-              const SizedBox(width: 8),
-              const Text('Tiếng Việt'),
-            ],
-          ),
-        ),
-      ],
+        );
+      },
+      color: Colors.white,
     );
   }
 } 

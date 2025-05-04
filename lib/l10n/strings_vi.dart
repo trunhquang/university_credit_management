@@ -115,28 +115,28 @@ class VietnameseStrings implements AppStrings {
   String get settingsTitle => 'Cài đặt';
 
   @override
-  String get englishRequirements => 'Điều kiện tiếng Anh';
+  String get englishRequirements => 'Yêu cầu tiếng Anh';
 
   @override
   String get certificateType => 'Loại chứng chỉ';
 
   @override
-  String get minimumScore => 'Điểm yêu cầu tối thiểu';
+  String get minimumScore => 'Điểm tối thiểu';
 
   @override
   String get achievedScore => 'Điểm đạt được';
 
   @override
-  String get minimumScoreHelper => 'Điểm tối thiểu cần đạt được';
+  String get minimumScoreHelper => 'Nhập điểm tối thiểu yêu cầu';
 
   @override
-  String get achievedScoreHelper => 'Điểm bạn đã đạt được (để trống nếu chưa có)';
+  String get achievedScoreHelper => 'Nhập điểm bạn đã đạt được';
 
   @override
   String get saveSettings => 'Lưu cài đặt';
 
   @override
-  String get settingsSaved => 'Đã cập nhật cài đặt thành công';
+  String get settingsSaved => 'Đã lưu cài đặt';
 
   @override
   String get settingsError => 'Lỗi khi lưu cài đặt';
@@ -145,25 +145,25 @@ class VietnameseStrings implements AppStrings {
   String get loadingSettingsError => 'Lỗi khi tải cài đặt';
 
   @override
-  String get pleaseEnterScore => 'Vui lòng nhập điểm yêu cầu';
+  String get pleaseEnterScore => 'Vui lòng nhập điểm';
 
   @override
   String get pleaseEnterValidNumber => 'Vui lòng nhập số hợp lệ';
 
   @override
-  String get scoreMustBeHigher => 'Điểm phải lớn hơn hoặc bằng điểm yêu cầu';
+  String get scoreMustBeHigher => 'Điểm phải lớn hơn hoặc bằng điểm tối thiểu';
 
   @override
-  String get englishRequirementInfo => 'Yêu cầu chứng chỉ tiếng Anh';
+  String get englishRequirementInfo => 'Thông tin yêu cầu tiếng Anh';
 
   @override
-  String get englishRequirementDescription => 'Sinh viên cần đạt một trong các chứng chỉ sau:';
+  String get englishRequirementDescription => 'Bạn cần đạt một trong các chứng chỉ tiếng Anh sau:';
 
   @override
-  String get englishPassed => 'Đã đạt yêu cầu tiếng Anh';
+  String get englishPassed => 'Đã đạt yêu cầu';
 
   @override
-  String get englishNotPassed => 'Chưa đạt yêu cầu tiếng Anh';
+  String get englishNotPassed => 'Chưa đạt yêu cầu';
 
   @override
   String get noCertificate => 'Chưa có chứng chỉ';
@@ -194,17 +194,46 @@ class VietnameseStrings implements AppStrings {
   String get programOverview => 'Tổng quan chương trình';
 
   @override
-  String get gpa => 'Điểm trung bình:';
+  String get gpa => 'Điểm trung bình';
 
   @override
   String get completionProgress => 'Tiến độ hoàn thành';
 
   @override
-  String get optionalCredits => 'Tín chỉ tự chọn:';
+  String get optionalCredits => 'Tín chỉ tự chọn';
 
   @override
   String get englishCertificate => 'Chứng chỉ tiếng Anh';
 
   @override
-  String get requiredScore => 'Điểm yêu cầu:';
+  String get requiredScore => 'Điểm yêu cầu';
+
+  @override
+  String get confirmDelete => 'Xác nhận xóa';
+
+  @override
+  String get sections => 'Khối kiến thức';
+
+  @override
+  String get noSections => 'Chưa có khối kiến thức nào';
+
+  @override
+  String get sectionAdded => 'Đã thêm khối kiến thức';
+
+  @override
+  String get sectionUpdated => 'Đã cập nhật khối kiến thức';
+
+  @override
+  String get sectionDeleted => 'Đã xóa khối kiến thức';
+
+  @override
+  String deleteSectionConfirmation(String sectionName) => 
+      'Bạn có chắc muốn xóa khối kiến thức "$sectionName"?\n'
+      'Tất cả môn học trong khối này cũng sẽ bị xóa.';
+
+  @override
+  String get required => 'Bắt buộc';
+
+  @override
+  String get optional => 'Tự chọn';
 } 

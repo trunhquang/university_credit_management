@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'course.dart';
 import 'subsection.dart';
 
 //Khối kiến thức
@@ -11,9 +12,15 @@ class Section with ChangeNotifier {
 
   final List<Subsection> subsections = [];
 
+  List<Course> get courses =>
+      subsections.expand((subsection) => subsection.courses).toList();
+
   Section(
-      this.name, this.requiredCredits, this.optionalCredits, this.description,
-      {String? id})
+      {required this.name,
+      required this.requiredCredits,
+      required this.optionalCredits,
+      required this.description,
+      String? id})
       : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
   int get totalCredits => requiredCredits + optionalCredits;
@@ -26,20 +33,9 @@ class Section with ChangeNotifier {
   double get progress =>
       requiredCredits > 0 ? completedCredits / requiredCredits : 0;
 
-  void addSubsection(String name) {
-    subsections.add(Subsection(name));
-    notifyListeners();
-  }
-
   void removeSubsection(Subsection subsection) {
     subsections.remove(subsection);
     notifyListeners();
-  }
-
-  void addCourse(String name, int credits) {
-    if (subsections.isNotEmpty) {
-      subsections.last.addCourse(name, credits);
-    }
   }
 
   Map<String, dynamic> toJson() {
@@ -56,10 +52,10 @@ class Section with ChangeNotifier {
 
   factory Section.fromJson(Map<String, dynamic> json) {
     final section = Section(
-      json['name'],
-      json['requiredCredits'],
-      json['optionalCredits'],
-      json['description'],
+      name: json['name'],
+      requiredCredits: json['requiredCredits'],
+      optionalCredits : json['optionalCredits'],
+      description: json['description'],
       id: json['id'],
     );
     if (json['subsections'] != null) {

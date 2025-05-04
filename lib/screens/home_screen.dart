@@ -232,7 +232,20 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(_languageManager.currentStrings.appName),
         backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.onPrimary,
+        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _loadData,
@@ -318,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _languageManager.currentStrings.contactEmail,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.onSurfaceVariant,
+                    color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -327,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   _languageManager.currentStrings.thankYouForUsing,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.onSurfaceVariant,
+                    color: AppColors.textSecondary,
                   ),
                   textAlign: TextAlign.center,
                 ),

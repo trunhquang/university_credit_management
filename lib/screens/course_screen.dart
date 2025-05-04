@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/program_service.dart';
 import '../models/section.dart';
 import '../models/course.dart';
 import '../screens/course_detail_screen.dart';
 import '../widgets/section_form_dialog.dart';
+import '../theme/app_colors.dart';
+import '../l10n/language_manager.dart';
 
 class CourseScreen extends StatefulWidget {
   const CourseScreen({super.key});
@@ -18,45 +21,47 @@ class _CourseScreenState extends State<CourseScreen> {
   Map<String, dynamic>? _missingCredits;
   bool _isLoading = false;
   String _errorMessage = '';
+  late final LanguageManager _languageManager;
 
   @override
   void initState() {
     super.initState();
+    _languageManager = Provider.of<LanguageManager>(context, listen: false);
+    _languageManager.addListener(_onLanguageChanged);
     _loadDataSourcePreference();
   }
 
+  @override
+  void dispose() {
+    _languageManager.removeListener(_onLanguageChanged);
+    super.dispose();
+  }
+
+  void _onLanguageChanged() {
+    setState(() {});
+  }
+
   Future<void> _loadDataSourcePreference() async {
-    _loadData(); // Load data sau khi biết nguồn dữ liệu
+    _loadData();
   }
 
   Future<void> _loadData() async {
     if (!mounted || _isLoading) return;
 
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
-
-      final sections = await _programService.getSections();
-      _sections = sections;
-
-      // Tạo dữ liệu mẫu cho missing credits
-      _missingCredits =
-      await _programService.getMissingRequiredCredits();
-
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
     setState(() {
-          _errorMessage = 'Lỗi khi tải dữ liệu: $e';
-          _isLoading = false;
+      _isLoading = true;
+      _errorMessage = '';
     });
-      }
+
+    final sections = await _programService.getSections();
+    _sections = sections;
+
+    _missingCredits = await _programService.getMissingRequiredCredits();
+
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -67,20 +72,12 @@ class _CourseScreenState extends State<CourseScreen> {
     );
 
     if (section != null) {
-      try {
-        await _programService.addSection(section);
-        await _loadData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã thêm khối kiến thức')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi: $e')),
-          );
-        }
+      await _programService.addSection(section);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_languageManager.currentStrings.sectionAdded)),
+        );
       }
     }
   }
@@ -92,20 +89,12 @@ class _CourseScreenState extends State<CourseScreen> {
     );
 
     if (updatedSection != null) {
-      try {
-        await _programService.updateSection(updatedSection);
-        await _loadData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã cập nhật khối kiến thức')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi: $e')),
-          );
-        }
+      await _programService.updateSection(updatedSection);
+      await _loadData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_languageManager.currentStrings.sectionUpdated)),
+        );
       }
     }
   }
@@ -114,40 +103,31 @@ class _CourseScreenState extends State<CourseScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Xác nhận xóa'),
+        title: Text(_languageManager.currentStrings.confirmDelete),
         content: Text(
-          'Bạn có chắc muốn xóa khối kiến thức "${section.name}"?\n'
-          'Tất cả môn học trong khối này cũng sẽ bị xóa.',
+          _languageManager.currentStrings.deleteSectionConfirmation(section.name),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy'),
+            child: Text(_languageManager.currentStrings.cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Xóa'),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error),
+            child: Text(_languageManager.currentStrings.delete),
           ),
         ],
       ),
     );
 
     if (confirm == true) {
-      try {
-        await _programService.deleteSection(section.id);
+      await _programService.deleteSection(section.id);
       await _loadData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Đã xóa khối kiến thức')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Lỗi: $e')),
-          );
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(_languageManager.currentStrings.sectionDeleted)),
+        );
       }
     }
   }
@@ -156,13 +136,15 @@ class _CourseScreenState extends State<CourseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Khối kiến thức'),
+        title: Text(_languageManager.currentStrings.sections),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: _addSection,
-              tooltip: 'Thêm khối kiến thức',
-            ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: _addSection,
+            tooltip: _languageManager.currentStrings.addSection,
+          ),
         ],
       ),
       body: _buildBody(),
@@ -170,7 +152,6 @@ class _CourseScreenState extends State<CourseScreen> {
   }
 
   Widget _buildBody() {
-    return Text("Chưa có khối kiến thức nào");
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -184,7 +165,7 @@ class _CourseScreenState extends State<CourseScreen> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadData,
-              child: const Text('Thử lại'),
+              child: Text(_languageManager.currentStrings.retry),
             ),
           ],
         ),
@@ -196,12 +177,12 @@ class _CourseScreenState extends State<CourseScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Chưa có khối kiến thức nào'),
+            Text(_languageManager.currentStrings.noSections),
             ...[
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: _addSection,
-                child: const Text('Thêm khối kiến thức'),
+                child: Text(_languageManager.currentStrings.addSection),
               ),
             ],
           ],
@@ -260,50 +241,53 @@ class _CourseScreenState extends State<CourseScreen> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             subtitle: Text(
               section.description,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: AppColors.textSecondary,
               ),
             ),
-            trailing:
-                PopupMenuButton<String>(
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit),
-                            SizedBox(width: 8),
-                            Text('Sửa'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Xóa', style: TextStyle(color: Colors.red)),
-                          ],
-                        ),
+            trailing: PopupMenuButton<String>(
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.edit, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Text(_languageManager.currentStrings.edit),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      const Icon(Icons.delete, color: AppColors.error),
+                      const SizedBox(width: 8),
+                      Text(
+                        _languageManager.currentStrings.delete,
+                        style: const TextStyle(color: AppColors.error),
                       ),
                     ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'edit':
-                          _editSection(section);
-                          break;
-                        case 'delete':
-                          _deleteSection(section);
-                          break;
-                      }
-                    },
                   ),
+                ),
+              ],
+              onSelected: (value) {
+                switch (value) {
+                  case 'edit':
+                    _editSection(section);
+                    break;
+                  case 'delete':
+                    _deleteSection(section);
+                    break;
+                }
+              },
+            ),
             onTap: () {
               Navigator.push(
                 context,
@@ -315,12 +299,12 @@ class _CourseScreenState extends State<CourseScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(16),
-                child: Column(
+            child: Column(
               children: [
                 LinearProgressIndicator(
                   value: totalCompletedCredits / totalCredits,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+                  backgroundColor: AppColors.progressBackground,
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressValue),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -330,15 +314,15 @@ class _CourseScreenState extends State<CourseScreen> {
                       text: TextSpan(
                         style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
                         children: [
-                          const TextSpan(text: 'Bắt buộc: '),
+                          TextSpan(text: '${_languageManager.currentStrings.required}: '),
                           TextSpan(
                             text: '$completedRequiredCredits',
-                            style: const TextStyle(color: Colors.green),
+                            style: const TextStyle(color: AppColors.success),
                           ),
                           if (inProgressRequiredCredits > 0)
                             TextSpan(
                               text: ' (+$inProgressRequiredCredits)',
-                              style: const TextStyle(color: Colors.blue),
+                              style: const TextStyle(color: AppColors.progressInProgress),
                             ),
                           TextSpan(text: '/${section.requiredCredits}'),
                         ],
@@ -348,15 +332,15 @@ class _CourseScreenState extends State<CourseScreen> {
                       text: TextSpan(
                         style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
                         children: [
-                          const TextSpan(text: 'Tự chọn: '),
+                          TextSpan(text: '${_languageManager.currentStrings.optional}: '),
                           TextSpan(
                             text: '$completedOptionalCredits',
-                            style: const TextStyle(color: Colors.green),
+                            style: const TextStyle(color: AppColors.success),
                           ),
                           if (inProgressOptionalCredits > 0)
                             TextSpan(
                               text: ' (+$inProgressOptionalCredits)',
-                              style: const TextStyle(color: Colors.blue),
+                              style: const TextStyle(color: AppColors.progressInProgress),
                             ),
                           TextSpan(text: '/${section.optionalCredits}'),
                         ],
@@ -372,25 +356,25 @@ class _CourseScreenState extends State<CourseScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     children: [
-                      const TextSpan(text: 'Tổng số tín chỉ: '),
+                      TextSpan(text: '${_languageManager.currentStrings.totalCredits}: '),
                       TextSpan(
                         text: '$totalCompletedCredits',
-                        style: const TextStyle(color: Colors.green),
+                        style: const TextStyle(color: AppColors.success),
                       ),
                       if (totalInProgressCredits > 0)
                         TextSpan(
                           text: ' (+$totalInProgressCredits)',
-                          style: const TextStyle(color: Colors.blue),
+                          style: const TextStyle(color: AppColors.progressInProgress),
                         ),
                       TextSpan(text: '/$totalCredits'),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
               ],
             ),
           ),
         ],
-            ),
+      ),
     );
   }
 } 

@@ -20,7 +20,6 @@ class ProgramOverview extends StatelessWidget {
     final percentage = (progress?['percentage'] as num?)?.toDouble() ?? 0;
     final totalCredits = progress?['totalCredits'] as int?;
     final completedCredits = progress?['completedCredits'] as int?;
-    final remainingCredits = progress?['remainingCredits'] as int? ;
 
     final inProgressCredits = (progress?['inProgressCredits'] as int?) ?? 0;
     final completedRequiredCredits = (progress?['completedRequiredCredits'] as int?) ?? 0;
