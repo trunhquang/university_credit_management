@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/program.dart';
 import '../models/course.dart';
 import '../models/section.dart';
 import '../models/settings.dart';
@@ -251,15 +250,6 @@ class ProgramService {
       // 'hasMissingCredits': hasMissingCredits,
       // 'sections': sectionData,
     };
-  }
-
-  Future<Program> getProgram() async {
-    final sections = await getSections();
-    return Program(
-      id: 'default',
-      name: 'Chương trình đào tạo',
-      sections: sections,
-    );
   }
 
   Future<Settings> getSettings() async {

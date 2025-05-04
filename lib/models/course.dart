@@ -12,6 +12,7 @@ enum CourseStatus {
   failed,
 }
 
+//Môn học
 class Course with ChangeNotifier {
   final String name;
   final String id;

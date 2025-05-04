@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'course.dart';
 
+//Nhiều môn học chọn 1
 class Subsection with ChangeNotifier {
   final String name;
   final String id;
