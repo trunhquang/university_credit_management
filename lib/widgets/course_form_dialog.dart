@@ -25,7 +25,6 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   
   CourseType _type = CourseType.required;
   CourseStatus _status = CourseStatus.notStarted;
-  bool _isPassed = false;
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
     if (course != null) {
       _type = course.type;
       _status = course.status;
-      _isPassed = course.isPassed;
     }
   }
 
@@ -185,16 +183,6 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
                   border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 16),
-              CheckboxListTile(
-                title: const Text('Đã đạt'),
-                value: _isPassed,
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _isPassed = value);
-                  }
-                },
-              ),
             ],
           ),
         ),
@@ -215,6 +203,7 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   void _saveCourse() {
     if (_formKey.currentState!.validate()) {
       final course = Course(
+        idGroup: widget.course?.idGroup,
         id: widget.course?.id ?? _idController.text,
         name: _nameController.text,
         credits: int.parse(_creditsController.text),

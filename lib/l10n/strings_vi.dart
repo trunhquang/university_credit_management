@@ -236,4 +236,62 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get optional => 'Tự chọn';
+
+  @override
+  String get completedCourses => 'Đã hoàn thành';
+
+  @override
+  String get inProgressCourses => 'Đang học';
+
+  @override
+  String get notStartedCourses => 'Chưa học';
+
+  @override
+  String get courseType => 'Loại môn học';
+
+  @override
+  String get grade => 'Điểm';
+
+  @override
+  String get prerequisiteCourses => 'Môn học tiên quyết';
+
+  @override
+  String courseDeleteConfirmation(String courseName) => 
+      'Bạn có chắc muốn xóa môn "$courseName"?';
+
+  @override
+  String get courseGroups => 'Nhóm môn học';
+
+  @override
+  String get createGroup => 'Tạo nhóm mới';
+
+  @override
+  String get group => 'Nhóm';
+
+  @override
+  String get selectCourses => 'Chọn môn học';
+
+  @override
+  String get create => 'Tạo';
+
+  @override
+  String get groupCreated => 'Đã tạo nhóm';
+
+  @override
+  String get courseRemovedFromGroup => 'Đã xóa môn học khỏi nhóm';
+
+  @override
+  String get groupRemoved => 'Đã xóa nhóm';
+
+  @override
+  String get selected => 'đã chọn';
+
+  @override
+  String get clearSelection => 'Xóa chọn';
+
+  @override
+  String get groupMinTwoCourses => 'Mỗi nhóm cần ít nhất 2 môn học';
+
+  @override
+  String get removeFromGroup => 'Xóa khỏi nhóm';
 } 

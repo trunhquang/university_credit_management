@@ -19,6 +19,7 @@ class Course with ChangeNotifier {
   final int credits;
   final CourseType type;
   final CourseStatus status;
+  final int? idGroup;
   bool _isCompleted = false;
   double? _grade;
   final List<String> prerequisiteCourses;
@@ -26,17 +27,20 @@ class Course with ChangeNotifier {
   Course({
     required this.name,
     required this.credits,
-    String? id,
+    required this.idGroup,
+    required String? id,
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
     double? grade,
     List<String>? prerequisiteCourses,
-  }) : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-       _grade = grade,
-       prerequisiteCourses = prerequisiteCourses ?? [];
+  })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        _grade = grade,
+        prerequisiteCourses = prerequisiteCourses ?? [];
 
   bool get isCompleted => _isCompleted;
+
   double? get grade => _grade;
+
   bool get isPassed => _grade != null && _grade! >= 5.0;
 
   void toggleCompleted() {
@@ -70,12 +74,14 @@ class Course with ChangeNotifier {
       'status': status.toString(),
       'isCompleted': _isCompleted,
       'grade': _grade,
+      'idGroup': idGroup,
       'prerequisiteCourses': prerequisiteCourses,
     };
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
+      idGroup: json['idGroup'],
       name: json['name'],
       id: json['id'],
       credits: json['credits'],
@@ -88,7 +94,8 @@ class Course with ChangeNotifier {
         orElse: () => CourseStatus.notStarted,
       ),
       grade: json['grade'],
-      prerequisiteCourses: (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
+      prerequisiteCourses:
+          (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
     ).._isCompleted = json['isCompleted'] ?? false;
   }
-} 
+}

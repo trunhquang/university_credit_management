@@ -207,6 +207,64 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get optional => 'Optional';
+
+  @override
+  String get completedCourses => 'Completed';
+
+  @override
+  String get inProgressCourses => 'In Progress';
+
+  @override
+  String get notStartedCourses => 'Not Started';
+
+  @override
+  String get courseType => 'Course Type';
+
+  @override
+  String get grade => 'Grade';
+
+  @override
+  String get prerequisiteCourses => 'Prerequisite Courses';
+
+  @override
+  String courseDeleteConfirmation(String courseName) => 
+      'Are you sure you want to delete the course "$courseName"?';
+
+  @override
+  String get courseGroups => 'Course Groups';
+
+  @override
+  String get createGroup => 'Create New Group';
+
+  @override
+  String get group => 'Group';
+
+  @override
+  String get selectCourses => 'Select Courses';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get groupCreated => 'Group created';
+
+  @override
+  String get courseRemovedFromGroup => 'Course removed from group';
+
+  @override
+  String get groupRemoved => 'Group removed';
+
+  @override
+  String get selected => 'selected';
+
+  @override
+  String get clearSelection => 'Clear selection';
+
+  @override
+  String get groupMinTwoCourses => 'Each group must have at least 2 courses';
+
+  @override
+  String get removeFromGroup => 'Remove from group';
 }
 
 class StringsEn {

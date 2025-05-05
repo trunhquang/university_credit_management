@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'course.dart';
-import 'subsection.dart';
 
 //Khối kiến thức
 class Section with ChangeNotifier {
@@ -10,10 +9,8 @@ class Section with ChangeNotifier {
   final int optionalCredits;
   final String description;
 
-  final List<Subsection> subsections = [];
+  final List<Course> courses = [];
 
-  List<Course> get courses =>
-      subsections.expand((subsection) => subsection.courses).toList();
 
   Section(
       {required this.name,
@@ -25,18 +22,14 @@ class Section with ChangeNotifier {
 
   int get totalCredits => requiredCredits + optionalCredits;
 
-  int get completedCredits => subsections.fold(
-      0, (sum, subsection) => sum + subsection.completedCredits);
+  int get completedCredits => courses.fold(
+      0, (sum, course) => sum + (course.isCompleted ? course.credits : 0));
 
   int get remainingCredits => totalCredits - completedCredits;
 
   double get progress =>
       requiredCredits > 0 ? completedCredits / requiredCredits : 0;
 
-  void removeSubsection(Subsection subsection) {
-    subsections.remove(subsection);
-    notifyListeners();
-  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -45,8 +38,7 @@ class Section with ChangeNotifier {
       'requiredCredits': requiredCredits,
       'optionalCredits': optionalCredits,
       'description': description,
-      'subsections':
-          subsections.map((subsection) => subsection.toJson()).toList(),
+      'courses': courses.map((course) => course.toJson()).toList(),
     };
   }
 
@@ -58,9 +50,9 @@ class Section with ChangeNotifier {
       description: json['description'],
       id: json['id'],
     );
-    if (json['subsections'] != null) {
-      for (var subsectionJson in json['subsections']) {
-        section.subsections.add(Subsection.fromJson(subsectionJson));
+    if (json['courses'] != null) {
+      for (var courseJson in json['courses']) {
+        section.courses.add(Course.fromJson(courseJson));
       }
     }
     return section;

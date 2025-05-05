@@ -67,4 +67,31 @@ abstract class AppStrings {
   String deleteSectionConfirmation(String sectionName);
   String get required;
   String get optional;
+
+  // Course Detail Screen
+  String get completedCourses;
+  String get inProgressCourses;
+  String get notStartedCourses;
+  String get courseType;
+  String get grade;
+  String get prerequisiteCourses;
+  String courseDeleteConfirmation(String courseName);
+
+  // Course Group Management
+  String get courseGroups => 'Nhóm môn học';
+  String get createGroup => 'Tạo nhóm mới';
+  String get group => 'Nhóm';
+  String get selectCourses => 'Chọn môn học';
+  String get create => 'Tạo';
+  String get groupCreated => 'Đã tạo nhóm';
+  String get courseRemovedFromGroup => 'Đã xóa môn học khỏi nhóm';
+  String get groupRemoved => 'Đã xóa nhóm';
+
+  // Course Selection
+  String get selected => 'đã chọn';
+  String get clearSelection => 'Xóa chọn';
+
+  // Group Management
+  String get groupMinTwoCourses => 'Mỗi nhóm cần ít nhất 2 môn học';
+  String get removeFromGroup => 'Xóa khỏi nhóm';
 }
