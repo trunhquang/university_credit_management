@@ -94,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
       errorMessage = '';
     });
 
-    try {
+    // try {
       final settings = await _programService.getSettings();
       final sections = await _programService.getSections();
       
@@ -126,14 +126,14 @@ class _HomeScreenState extends State<HomeScreen> {
           isLoading = false;
         });
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          errorMessage = e.toString();
-          isLoading = false;
-        });
-      }
-    }
+    // } catch (e) {
+    //   if (mounted) {
+    //     setState(() {
+    //       errorMessage = e.toString();
+    //       isLoading = false;
+    //     });
+    //   }
+    // }
   }
 
   void _loadRewardedAd() {

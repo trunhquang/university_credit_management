@@ -9,14 +9,14 @@ class Section with ChangeNotifier {
   final int optionalCredits;
   final String description;
 
-  final List<Course> courses = [];
-
+  final List<Course> courses;
 
   Section(
       {required this.name,
       required this.requiredCredits,
       required this.optionalCredits,
       required this.description,
+      this.courses = const [],
       String? id})
       : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -30,7 +30,6 @@ class Section with ChangeNotifier {
   double get progress =>
       requiredCredits > 0 ? completedCredits / requiredCredits : 0;
 
-
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -43,18 +42,21 @@ class Section with ChangeNotifier {
   }
 
   factory Section.fromJson(Map<String, dynamic> json) {
+    List<Course> courses = [];
+    if (json['courses'] != null) {
+      for (var courseJson in json['courses']) {
+        courses.add(Course.fromJson(courseJson));
+      }
+    }
     final section = Section(
       name: json['name'],
       requiredCredits: json['requiredCredits'],
-      optionalCredits : json['optionalCredits'],
+      optionalCredits: json['optionalCredits'],
       description: json['description'],
       id: json['id'],
+      courses: courses,
     );
-    if (json['courses'] != null) {
-      for (var courseJson in json['courses']) {
-        section.courses.add(Course.fromJson(courseJson));
-      }
-    }
+
     return section;
   }
 }

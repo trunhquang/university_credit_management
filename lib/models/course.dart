@@ -27,7 +27,7 @@ class Course with ChangeNotifier {
   Course({
     required this.name,
     required this.credits,
-    required this.idGroup,
+    this.idGroup,
     required String? id,
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
