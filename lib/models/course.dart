@@ -19,7 +19,6 @@ class Course with ChangeNotifier {
   final int credits;
   final CourseType type;
   final CourseStatus status;
-  final int? idGroup;
   bool _isCompleted = false;
   double? _grade;
   final List<String> prerequisiteCourses;
@@ -27,7 +26,6 @@ class Course with ChangeNotifier {
   Course({
     required this.name,
     required this.credits,
-    this.idGroup,
     required String? id,
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
@@ -74,14 +72,12 @@ class Course with ChangeNotifier {
       'status': status.toString(),
       'isCompleted': _isCompleted,
       'grade': _grade,
-      'idGroup': idGroup,
       'prerequisiteCourses': prerequisiteCourses,
     };
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      idGroup: json['idGroup'],
       name: json['name'],
       id: json['id'],
       credits: json['credits'],
@@ -97,5 +93,17 @@ class Course with ChangeNotifier {
       prerequisiteCourses:
           (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
     ).._isCompleted = json['isCompleted'] ?? false;
+  }
+
+  copyWith({required CourseStatus status}) {
+    return Course(
+      name: name,
+      credits: credits,
+      id: id,
+      type: type,
+      status: status,
+      grade: grade,
+      prerequisiteCourses: List.from(prerequisiteCourses),
+    );
   }
 }

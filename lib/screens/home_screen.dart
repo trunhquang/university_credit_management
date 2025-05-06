@@ -10,7 +10,7 @@ import '../services/course_service.dart';
 import '../services/ad_manager.dart';
 import '../l10n/language_manager.dart';
 import '../theme/app_colors.dart';
-import 'course_screen.dart';
+import 'course_session_screen.dart';
 import 'progress_screen.dart';
 import 'settings_screen.dart';
 
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Widget screen;
     switch (route) {
       case '/courses':
-        screen = const CourseScreen();
+        screen = const CourseSessionScreen();
         break;
       case '/progress':
         screen = const ProgressScreen();
@@ -305,13 +305,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 '/courses',
                 AppColors.courses,
               ),
-              _buildNavigationCard(
-                context,
-                _languageManager.currentStrings.progress,
-                Icons.timeline,
-                '/progress',
-                AppColors.progress,
-              ),
+              // _buildNavigationCard(
+              //   context,
+              //   _languageManager.currentStrings.progress,
+              //   Icons.timeline,
+              //   '/progress',
+              //   AppColors.progress,
+              // ),
               _buildNavigationCard(
                 context,
                 _languageManager.currentStrings.settings,

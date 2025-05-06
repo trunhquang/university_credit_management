@@ -3,22 +3,21 @@ import 'package:provider/provider.dart';
 import '../services/program_service.dart';
 import '../models/section.dart';
 import '../models/course.dart';
-import '../screens/course_detail_screen.dart';
+import '../screens/course_group_screen.dart';
 import '../widgets/section_form_dialog.dart';
 import '../theme/app_colors.dart';
 import '../l10n/language_manager.dart';
 
-class CourseScreen extends StatefulWidget {
-  const CourseScreen({super.key});
+class CourseSessionScreen extends StatefulWidget {
+  const CourseSessionScreen({super.key});
 
   @override
-  State<CourseScreen> createState() => _CourseScreenState();
+  State<CourseSessionScreen> createState() => _CourseSessionScreenState();
 }
 
-class _CourseScreenState extends State<CourseScreen> {
+class _CourseSessionScreenState extends State<CourseSessionScreen> {
   final _programService = ProgramService();
   List<Section>? _sections;
-  Map<String, dynamic>? _missingCredits;
   bool _isLoading = false;
   String _errorMessage = '';
   late final LanguageManager _languageManager;
@@ -56,7 +55,6 @@ class _CourseScreenState extends State<CourseScreen> {
     final sections = await _programService.getSections();
     _sections = sections;
 
-    _missingCredits = await _programService.getMissingRequiredCredits();
 
     if (mounted) {
       setState(() {
@@ -202,26 +200,30 @@ class _CourseScreenState extends State<CourseScreen> {
 
   Widget _buildSectionCard(BuildContext context, Section section) {
     // Tính toán số tín chỉ đã hoàn thành
-    final completedRequiredCredits = section.courses
+    final completedRequiredCredits = section.courseGroups
+        .expand((group) => group.courses)
         .where((course) =>
             course.status == CourseStatus.completed &&
             course.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final completedOptionalCredits = section.courses
+    final completedOptionalCredits = section.courseGroups
+        .expand((group) => group.courses)
         .where((course) =>
             course.status == CourseStatus.completed &&
             course.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
     // Tính toán số tín chỉ đang học
-    final inProgressRequiredCredits = section.courses
+    final inProgressRequiredCredits = section.courseGroups
+        .expand((group) => group.courses)
         .where((course) =>
             course.status == CourseStatus.inProgress &&
             course.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final inProgressOptionalCredits = section.courses
+    final inProgressOptionalCredits = section.courseGroups
+        .expand((group) => group.courses)
         .where((course) =>
             course.status == CourseStatus.inProgress &&
             course.type == CourseType.optional)
@@ -292,7 +294,7 @@ class _CourseScreenState extends State<CourseScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CourseDetailScreen(section: section),
+                  builder: (context) => CourseGroupScreen(section: section),
                 ),
               ).then((_) => _loadData());
             },

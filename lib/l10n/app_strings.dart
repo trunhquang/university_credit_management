@@ -94,4 +94,25 @@ abstract class AppStrings {
   // Group Management
   String get groupMinTwoCourses => 'Mỗi nhóm cần ít nhất 2 môn học';
   String get removeFromGroup => 'Xóa khỏi nhóm';
+
+  // Course Status
+  String get completed => 'Hoàn thành';
+  String get inProgress => 'Đang học';
+  String get notStarted => 'Chưa học';
+  String get failed => 'Không đạt';
+
+  // Section Form Dialog
+  String get editSection;
+  String get sectionNameRequired;
+  String get requiredCreditsRequired;
+  String get optionalCreditsRequired;
+  String get creditsMustBePositive;
+  String get add;
+  String get update;
+
+  // Course management
+  String get editCourse;
+  String get courseId;
+  String get status;
+  String get courseRemoved;
 }

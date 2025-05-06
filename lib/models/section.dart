@@ -1,28 +1,30 @@
 import 'package:flutter/foundation.dart';
 import 'course.dart';
+import 'course_group.dart';
 
 //Khối kiến thức
 class Section with ChangeNotifier {
-  final String name;
   final String id;
+  final String name;
+  final String description;
   final int requiredCredits;
   final int optionalCredits;
-  final String description;
+  final List<CourseGroup> courseGroups;
 
-  final List<Course> courses;
+  Section({
+    required this.id,
+    required this.name,
+    required this.description,
+    required this.requiredCredits,
+    required this.optionalCredits,
+    required this.courseGroups,
+  });
 
-  Section(
-      {required this.name,
-      required this.requiredCredits,
-      required this.optionalCredits,
-      required this.description,
-      this.courses = const [],
-      String? id})
-      : id = id ?? DateTime.now().millisecondsSinceEpoch.toString();
+  List<Course> get allCourses => courseGroups.expand((group) => group.courses).toList();
 
   int get totalCredits => requiredCredits + optionalCredits;
 
-  int get completedCredits => courses.fold(
+  int get completedCredits => allCourses.fold(
       0, (sum, course) => sum + (course.isCompleted ? course.credits : 0));
 
   int get remainingCredits => totalCredits - completedCredits;
@@ -32,31 +34,25 @@ class Section with ChangeNotifier {
 
   Map<String, dynamic> toJson() {
     return {
-      'name': name,
       'id': id,
+      'name': name,
+      'description': description,
       'requiredCredits': requiredCredits,
       'optionalCredits': optionalCredits,
-      'description': description,
-      'courses': courses.map((course) => course.toJson()).toList(),
+      'courseGroups': courseGroups.map((group) => group.toJson()).toList(),
     };
   }
 
   factory Section.fromJson(Map<String, dynamic> json) {
-    List<Course> courses = [];
-    if (json['courses'] != null) {
-      for (var courseJson in json['courses']) {
-        courses.add(Course.fromJson(courseJson));
-      }
-    }
-    final section = Section(
+    return Section(
+      id: json['id'],
       name: json['name'],
+      description: json['description'],
       requiredCredits: json['requiredCredits'],
       optionalCredits: json['optionalCredits'],
-      description: json['description'],
-      id: json['id'],
-      courses: courses,
+      courseGroups: (json['courseGroups'] as List)
+          .map((groupJson) => CourseGroup.fromJson(groupJson))
+          .toList(),
     );
-
-    return section;
   }
 }

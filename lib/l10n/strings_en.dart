@@ -265,6 +265,51 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get removeFromGroup => 'Remove from group';
+
+  @override
+  String get completed => 'Completed';
+
+  @override
+  String get inProgress => 'In Progress';
+
+  @override
+  String get notStarted => 'Not Started';
+
+  @override
+  String get failed => 'Failed';
+
+  @override
+  String get editSection => 'Edit Section';
+
+  @override
+  String get sectionNameRequired => 'Please enter section name';
+
+  @override
+  String get requiredCreditsRequired => 'Please enter required credits';
+
+  @override
+  String get optionalCreditsRequired => 'Please enter optional credits';
+
+  @override
+  String get creditsMustBePositive => 'Credits must be a positive number';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get editCourse => 'Edit Course';
+
+  @override
+  String get courseId => 'Course ID';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get courseRemoved => 'Course will be removed';
 }
 
 class StringsEn {

@@ -203,7 +203,6 @@ class _CourseFormDialogState extends State<CourseFormDialog> {
   void _saveCourse() {
     if (_formKey.currentState!.validate()) {
       final course = Course(
-        idGroup: widget.course?.idGroup,
         id: widget.course?.id ?? _idController.text,
         name: _nameController.text,
         credits: int.parse(_creditsController.text),

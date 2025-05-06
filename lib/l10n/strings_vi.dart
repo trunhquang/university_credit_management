@@ -17,6 +17,24 @@ class VietnameseStrings implements AppStrings {
   String get addCourse => 'Thêm môn học';
 
   @override
+  String get editCourse => 'Sửa môn học';
+
+  @override
+  String get courseId => 'Mã môn học';
+
+  @override
+  String get courseName => 'Tên môn học';
+
+  @override
+  String get courseType => 'Loại môn học';
+
+  @override
+  String get status => 'Trạng thái';
+
+  @override
+  String get courseRemoved => 'Môn học sẽ bị xóa';
+
+  @override
   String get majorName => 'Tên ngành học';
 
   @override
@@ -24,9 +42,6 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get subsectionName => 'Tên mục';
-
-  @override
-  String get courseName => 'Tên môn học';
 
   @override
   String get credits => 'Số tín chỉ';
@@ -247,9 +262,6 @@ class VietnameseStrings implements AppStrings {
   String get notStartedCourses => 'Chưa học';
 
   @override
-  String get courseType => 'Loại môn học';
-
-  @override
   String get grade => 'Điểm';
 
   @override
@@ -294,4 +306,37 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get removeFromGroup => 'Xóa khỏi nhóm';
+
+  @override
+  String get completed => 'Hoàn thành';
+
+  @override
+  String get inProgress => 'Đang học';
+
+  @override
+  String get notStarted => 'Chưa học';
+
+  @override
+  String get failed => 'Không đạt';
+
+  @override
+  String get editSection => 'Sửa khối kiến thức';
+
+  @override
+  String get sectionNameRequired => 'Vui lòng nhập tên khối kiến thức';
+
+  @override
+  String get requiredCreditsRequired => 'Vui lòng nhập số tín chỉ bắt buộc';
+
+  @override
+  String get optionalCreditsRequired => 'Vui lòng nhập số tín chỉ tự chọn';
+
+  @override
+  String get creditsMustBePositive => 'Số tín chỉ phải là số nguyên không âm';
+
+  @override
+  String get add => 'Thêm';
+
+  @override
+  String get update => 'Cập nhật';
 } 

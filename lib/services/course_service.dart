@@ -13,29 +13,43 @@ class CourseService {
   }
 
   Future<List<Course>> getCourses() async {
-    final coursesJson = _prefs.getStringList(_coursesKey) ?? [];
-    return coursesJson.map((json) => Course.fromJson(jsonDecode(json))).toList();
+    final sections = await _programService.getSections();
+    return sections
+        .expand((section) => section.courseGroups)
+        .expand((group) => group.courses)
+        .toList();
   }
 
   Future<void> addCourse(Course course) async {
-    final courses = await getCourses();
-    courses.add(course);
-    await _saveCourses(courses);
+    final sections = await _programService.getSections();
+    if (sections.isNotEmpty) {
+      sections[0].courseGroups[0].courses.add(course);
+      await _programService.saveSections(sections);
+    }
   }
 
   Future<void> updateCourse(Course course) async {
-    final courses = await getCourses();
-    final index = courses.indexWhere((c) => c.id == course.id);
-    if (index != -1) {
-      courses[index] = course;
-      await _saveCourses(courses);
+    final sections = await _programService.getSections();
+    for (var section in sections) {
+      for (var group in section.courseGroups) {
+        final index = group.courses.indexWhere((c) => c.id == course.id);
+        if (index != -1) {
+          group.courses[index] = course;
+          await _programService.saveSections(sections);
+          return;
+        }
+      }
     }
   }
 
   Future<void> deleteCourse(String courseId) async {
-    final courses = await getCourses();
-    courses.removeWhere((course) => course.id == courseId);
-    await _saveCourses(courses);
+    final sections = await _programService.getSections();
+    for (var section in sections) {
+      for (var group in section.courseGroups) {
+        group.courses.removeWhere((course) => course.id == courseId);
+      }
+    }
+    await _programService.saveSections(sections);
   }
 
   Future<double> calculateGPA() async {
@@ -55,20 +69,22 @@ class CourseService {
     return totalCredits > 0 ? totalGradePoints / totalCredits : 0.0;
   }
 
-
   Future<int> getTotalCredits() async {
-    final courses = await getCourses();
-    return courses.fold<int>(0, (sum, course) => sum + course.credits);
+    final sections = await _programService.getSections();
+    return sections
+        .expand((section) => section.courseGroups)
+        .expand((group) => group.courses)
+        .fold<int>(0, (sum, course) => sum + course.credits);
   }
 
-
-  Future<int> getPassedCredits() async {
-    final courses = await getCourses();
-    return courses.where((course) => course.isPassed).fold<int>(0, (sum, course) => sum + course.credits);
+  Future<int> getCompletedCredits() async {
+    final sections = await _programService.getSections();
+    return sections
+        .expand((section) => section.courseGroups)
+        .expand((group) => group.courses)
+        .where((course) => course.isPassed)
+        .fold<int>(0, (sum, course) => sum + course.credits);
   }
-
-
-
 
   Future<void> _saveCourses(List<Course> courses) async {
     final coursesJson = courses.map((course) => jsonEncode(course.toJson())).toList();
@@ -76,33 +92,23 @@ class CourseService {
   }
 
   Future<double> calculateOverallGPA() async {
-    // try {
-    //   final sections = await _programService.getSections();
-    //
-    //   double totalGradePoints = 0;
-    //   int totalCredits = 0;
-    //
-    //   // Tính tổng điểm và tổng tín chỉ cho các môn đã hoàn thành
-    //   for (var section in sections) {
-    //     for (var course in section.courses) {
-    //       if (course.grade != null && course.isPassed) {
-    //         totalGradePoints += (course.grade! * course.credits);
-    //         totalCredits += course.credits;
-    //       }
-    //     }
-    //   }
-    //
-    //   // Tránh chia cho 0
-    //   if (totalCredits == 0) {
-    //     return 0.0;
-    //   }
-    //
-    //   // Làm tròn đến 2 chữ số thập phân
-    //   return double.parse((totalGradePoints / totalCredits).toStringAsFixed(2));
-    // } catch (e) {
-    //   print('Error calculating GPA: $e');
-    //   return 0.0;
-    // }
-    return 0;
+    final sections = await _programService.getSections();
+    final courses = sections
+        .expand((section) => section.courseGroups)
+        .expand((group) => group.courses)
+        .toList();
+    if (courses.isEmpty) return 0.0;
+
+    double totalPoints = 0;
+    int totalCredits = 0;
+
+    for (var course in courses) {
+      if (course.grade != null) {
+        totalPoints += course.grade! * course.credits;
+        totalCredits += course.credits;
+      }
+    }
+
+    return totalCredits > 0 ? totalPoints / totalCredits : 0.0;
   }
 } 

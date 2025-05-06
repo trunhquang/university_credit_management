@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/section.dart';
+import '../l10n/language_manager.dart';
+import '../theme/app_colors.dart';
 
 class SectionFormDialog extends StatefulWidget {
   final Section? section;
@@ -16,6 +18,7 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
   late final TextEditingController _descriptionController;
   late final TextEditingController _requiredCreditsController;
   late final TextEditingController _optionalCreditsController;
+  final _languageManager = LanguageManager();
 
   @override
   void initState() {
@@ -42,7 +45,12 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.section == null ? 'Thêm khối kiến thức' : 'Sửa khối kiến thức'),
+      title: Text(
+        widget.section == null 
+          ? _languageManager.currentStrings.addSection 
+          : _languageManager.currentStrings.editSection,
+        style: TextStyle(color: AppColors.primary),
+      ),
       content: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -51,13 +59,17 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Tên khối kiến thức',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: _languageManager.currentStrings.sectionName,
+                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppColors.primary),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập tên khối kiến thức';
+                    return _languageManager.currentStrings.sectionNameRequired;
                   }
                   return null;
                 },
@@ -65,27 +77,35 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Mô tả',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: _languageManager.currentStrings.description,
+                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppColors.primary),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _requiredCreditsController,
-                decoration: const InputDecoration(
-                  labelText: 'Số tín chỉ bắt buộc',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: _languageManager.currentStrings.requiredCredits,
+                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppColors.primary),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số tín chỉ bắt buộc';
+                    return _languageManager.currentStrings.requiredCreditsRequired;
                   }
                   final credits = int.tryParse(value);
                   if (credits == null || credits < 0) {
-                    return 'Số tín chỉ phải là số nguyên không âm';
+                    return _languageManager.currentStrings.creditsMustBePositive;
                   }
                   return null;
                 },
@@ -93,18 +113,22 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _optionalCreditsController,
-                decoration: const InputDecoration(
-                  labelText: 'Số tín chỉ tự chọn',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: _languageManager.currentStrings.optionalCredits,
+                  border: const OutlineInputBorder(),
+                  labelStyle: TextStyle(color: AppColors.primary),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary),
+                  ),
                 ),
                 keyboardType: TextInputType.number,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập số tín chỉ tự chọn';
+                    return _languageManager.currentStrings.optionalCreditsRequired;
                   }
                   final credits = int.tryParse(value);
                   if (credits == null || credits < 0) {
-                    return 'Số tín chỉ phải là số nguyên không âm';
+                    return _languageManager.currentStrings.creditsMustBePositive;
                   }
                   return null;
                 },
@@ -116,7 +140,10 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Hủy'),
+          child: Text(
+            _languageManager.currentStrings.cancel,
+            style: TextStyle(color: AppColors.primary),
+          ),
         ),
         ElevatedButton(
           onPressed: () {
@@ -124,14 +151,23 @@ class _SectionFormDialogState extends State<SectionFormDialog> {
               final section = Section(
                 name: _nameController.text,
                 requiredCredits: int.parse(_requiredCreditsController.text),
-                optionalCredits : int.parse(_optionalCreditsController.text),
+                optionalCredits: int.parse(_optionalCreditsController.text),
                 description: _descriptionController.text,
-                id: widget.section?.id,
+                id: widget.section?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                courseGroups: widget.section?.courseGroups ?? [],
               );
               Navigator.of(context).pop(section);
             }
           },
-          child: Text(widget.section == null ? 'Thêm' : 'Cập nhật'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+          ),
+          child: Text(
+            widget.section == null 
+              ? _languageManager.currentStrings.add 
+              : _languageManager.currentStrings.update,
+          ),
         ),
       ],
     );
