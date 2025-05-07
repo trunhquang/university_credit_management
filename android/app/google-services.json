@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "139683076629",
+    "firebase_url": "https://studentcredit-c4d20-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "studentcredit-c4d20",
+    "storage_bucket": "studentcredit-c4d20.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:139683076629:android:745e5217760dfd93b94c1c",
+        "android_client_info": {
+          "package_name": "com.quangnguyen.creditmanage1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUPQDZ-nWIsCnmaEHv6GhyvMJhBmUtBpU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

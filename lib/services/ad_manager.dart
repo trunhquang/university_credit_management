@@ -9,7 +9,7 @@ class AdManager {
 
   // Test Ad Unit IDs
   static final String _testRewardedAdUnitId = Platform.isAndroid
-      ? 'ca-app-pub-5958322053700133/8107412073'
+      ? 'ca-app-pub-5958322053700133/4534228068'
       : 'ca-app-pub-5958322053700133/6273727285';
 
   RewardedAd? _rewardedAd;

@@ -322,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 '/settings',
                 AppColors.settings,
               ),
-              // _buildSupportCard(),
+              _buildSupportCard(),
             ],
           ),
           const SizedBox(height: 24),
