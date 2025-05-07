@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../services/program_service.dart';
 import '../services/course_service.dart';
 import '../models/section.dart';
 import '../models/course.dart';
+import '../l10n/language_manager.dart';
+import '../l10n/app_strings.dart';
+import '../theme/app_colors.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -105,21 +109,38 @@ class _ProgressScreenState extends State<ProgressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final languageManager = Provider.of<LanguageManager>(context);
+    final strings = languageManager.currentStrings;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tiến độ học tập'),
+        title: Text(
+          strings.progressText,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: _buildBody(),
+      backgroundColor: AppColors.background,
+      body: _buildBody(strings),
     );
   }
 
-  Widget _buildBody() {
+  Widget _buildBody(AppStrings strings) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+        ),
+      );
     }
 
     if (_errorMessage.isNotEmpty) {
@@ -127,11 +148,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_errorMessage),
+            Text(
+              _errorMessage,
+              style: const TextStyle(color: AppColors.error),
+            ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadData,
-              child: const Text('Thử lại'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(strings.retry),
             ),
           ],
         ),
@@ -139,11 +167,17 @@ class _ProgressScreenState extends State<ProgressScreen> {
     }
 
     if (_progress == null) {
-      return const Center(child: Text('Không có dữ liệu'));
+      return Center(
+        child: Text(
+          strings.noSections,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+      );
     }
 
     return RefreshIndicator(
       onRefresh: _loadData,
+      color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
@@ -151,13 +185,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildOverallProgress(),
+              _buildOverallProgress(strings),
               const SizedBox(height: 24),
-              _buildGPACard(),
+              _buildGPACard(strings),
               const SizedBox(height: 24),
-              _buildCreditsSummary(),
+              _buildCreditsSummary(strings),
               const SizedBox(height: 24),
-              _buildSectionProgress(),
+              _buildSectionProgress(strings),
             ],
           ),
         ),
@@ -165,31 +199,36 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildOverallProgress() {
+  Widget _buildOverallProgress(AppStrings strings) {
     final percentage = _progress!['overallProgress'].toDouble();
     final completedCredits = _progress!['completedCredits'] as int;
     final inProgressCredits = _progress!['inProgressCredits'] as int;
     final totalCredits = _progress!['totalCredits'] as int;
 
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Tiến độ tổng thể',
-              style: TextStyle(
+            Text(
+              strings.completionProgress,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: percentage / 100,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: AppColors.progressBackground,
               valueColor: AlwaysStoppedAnimation<Color>(
-                percentage == 100 ? Colors.green : Colors.blue,
+                percentage == 100 ? AppColors.progressCompleted : AppColors.progressInProgress,
               ),
             ),
             const SizedBox(height: 8),
@@ -197,21 +236,24 @@ class _ProgressScreenState extends State<ProgressScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${percentage.toStringAsFixed(2)}% hoàn thành',
+                  '${percentage.toStringAsFixed(2)}% ${strings.completed}',
                   style: TextStyle(
                     fontSize: 16,
-                    color: percentage == 100 ? Colors.green : Colors.blue,
+                    color: percentage == 100 ? AppColors.success : AppColors.primary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 RichText(
                   text: TextSpan(
-                    style: DefaultTextStyle.of(context).style.copyWith(fontSize: 14),
+                    style: DefaultTextStyle.of(context).style.copyWith(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
                     children: [
                       TextSpan(
                         text: '$completedCredits',
                         style: const TextStyle(
-                          color: Colors.green,
+                          color: AppColors.success,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -219,11 +261,11 @@ class _ProgressScreenState extends State<ProgressScreen> {
                         TextSpan(
                           text: ' (+$inProgressCredits)',
                           style: const TextStyle(
-                            color: Colors.blue,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      TextSpan(text: '/$totalCredits tín chỉ'),
+                      TextSpan(text: '/$totalCredits ${strings.credits}'),
                     ],
                   ),
                 ),
@@ -235,27 +277,34 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildGPACard() {
+  Widget _buildGPACard(AppStrings strings) {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            const Icon(Icons.school, size: 48, color: Colors.blue),
+            const Icon(Icons.school, size: 48, color: AppColors.primary),
             const SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Điểm trung bình tích lũy',
-                  style: TextStyle(fontSize: 16),
+                Text(
+                  strings.gpa,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 Text(
                   _overallGPA.toStringAsFixed(2),
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: AppColors.primary,
                   ),
                 ),
               ],
@@ -266,8 +315,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildCreditsSummary() {
+  Widget _buildCreditsSummary(AppStrings strings) {
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -276,25 +329,26 @@ class _ProgressScreenState extends State<ProgressScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Tổng quan tín chỉ',
-                  style: TextStyle(
+                Text(
+                  strings.totalCredits,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    'Tổng: ${_progress!['totalCredits']} tín chỉ',
+                    '${strings.total}: ${_progress!['totalCredits']} ${strings.credits}',
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -302,30 +356,33 @@ class _ProgressScreenState extends State<ProgressScreen> {
             ),
             const SizedBox(height: 16),
             _buildCreditRow(
-              'Tín chỉ bắt buộc',
+              strings.requiredCredits,
               _progress!['completedRequiredCredits'],
               _progress!['inProgressRequiredCredits'],
               _progress!['totalRequiredCredits'],
-              Colors.blue,
+              AppColors.primary,
+              strings,
             ),
             const SizedBox(height: 12),
             _buildCreditRow(
-              'Tín chỉ tự chọn',
+              strings.optionalCredits,
               _progress!['completedOptionalCredits'],
               _progress!['inProgressOptionalCredits'],
               _progress!['totalOptionalCredits'],
-              Colors.green,
+              AppColors.secondary,
+              strings,
             ),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 12),
-              child: Divider(height: 1),
+              child: Divider(height: 1, color: AppColors.divider),
             ),
             _buildCreditRow(
-              'Tổng số tín chỉ',
+              strings.totalCredits,
               _progress!['completedCredits'],
               _progress!['inProgressCredits'],
               _progress!['totalCredits'],
-              Colors.purple,
+              AppColors.info,
+              strings,
               isTotal: true,
             ),
           ],
@@ -339,7 +396,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
     int completed,
     int inProgress,
     int total,
-    Color color, {
+    Color color,
+    AppStrings strings, {
     bool isTotal = false,
   }) {
     final double progress = total > 0 ? (completed + inProgress) / total : 0;
@@ -355,6 +413,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               title,
               style: TextStyle(
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                color: AppColors.textPrimary,
               ),
             ),
             Text(
@@ -369,7 +428,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         const SizedBox(height: 4),
         LinearProgressIndicator(
           value: progress,
-          backgroundColor: Colors.grey[200],
+          backgroundColor: AppColors.progressBackground,
           valueColor: AlwaysStoppedAnimation<Color>(color),
         ),
         const SizedBox(height: 4),
@@ -377,13 +436,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
           text: TextSpan(
             style: DefaultTextStyle.of(context).style.copyWith(
               fontSize: 13,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
             children: [
               TextSpan(
                 text: '$completed',
                 style: TextStyle(
-                  color: Colors.green,
+                  color: AppColors.success,
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -391,14 +450,14 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 TextSpan(
                   text: ' (+$inProgress)',
                   style: TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.primary,
                     fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
-              TextSpan(text: '/$total tín chỉ'),
+              TextSpan(text: '/$total ${strings.credits}'),
               if (remaining > 0)
                 TextSpan(
-                  text: ' • Còn thiếu: $remaining',
+                  text: ' • ${strings.remainingCredits}: $remaining',
                   style: const TextStyle(
                     fontStyle: FontStyle.italic,
                   ),
@@ -410,28 +469,34 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  Widget _buildSectionProgress() {
+  Widget _buildSectionProgress(AppStrings strings) {
     if (_sections == null || _sections!.isEmpty) {
-      return const Center(child: Text('Chưa có dữ liệu khối kiến thức'));
+      return Center(
+        child: Text(
+          strings.noSections,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Tiến độ theo khối kiến thức',
-          style: TextStyle(
+        Text(
+          strings.sections,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
-        ...(_sections ?? []).map((section) => _buildSectionCard(section)),
+        ...(_sections ?? []).map((section) => _buildSectionCard(section, strings)),
       ],
     );
   }
 
-  Widget _buildSectionCard(Section section) {
+  Widget _buildSectionCard(Section section, AppStrings strings) {
     final completedRequiredCredits = section.allCourses
         .where((c) => c.status == CourseStatus.completed && c.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
@@ -446,6 +511,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
         .fold(0, (sum, course) => sum + course.credits);
 
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -457,25 +526,28 @@ class _ProgressScreenState extends State<ProgressScreen> {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             if (section.requiredCredits > 0)
               _buildCreditRow(
-                'Bắt buộc',
+                strings.required,
                 completedRequiredCredits,
                 inProgressRequiredCredits,
                 section.requiredCredits,
-                Colors.blue,
+                AppColors.primary,
+                strings,
               ),
             if (section.optionalCredits > 0) ...[
               const SizedBox(height: 8),
               _buildCreditRow(
-                'Tự chọn',
+                strings.optional,
                 completedOptionalCredits,
                 inProgressOptionalCredits,
                 section.optionalCredits,
-                Colors.green,
+                AppColors.secondary,
+                strings,
               ),
             ],
           ],

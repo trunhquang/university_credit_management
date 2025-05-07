@@ -41,6 +41,10 @@ dependencies:
   # dart run flutter_native_splash:create
   flutter_native_splash: ^2.3.6
   flutter_launcher_icons: ^0.13.1
+  url_launcher: ^6.3.1
+  package_info_plus: ^8.3.0
+  firebase_core: ^3.13.0
+  firebase_database: ^11.3.5
 
 dev_dependencies:
   flutter_test:

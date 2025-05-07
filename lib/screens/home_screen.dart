@@ -1,10 +1,9 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../services/app_update_service.dart';
 import '../widgets/program_overview.dart';
 import '../widgets/missing_credits_warning.dart';
-import '../widgets/language_dropdown.dart';
 import '../services/program_service.dart';
 import '../services/course_service.dart';
 import '../services/ad_manager.dart';
@@ -37,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    AppUpdateService.checkForUpdates(context);
     _languageManager = Provider.of<LanguageManager>(context, listen: false);
     _languageManager.addListener(_onLanguageChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {

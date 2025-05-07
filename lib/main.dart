@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'l10n/language_manager.dart';
 import 'screens/home_screen.dart';
+import 'services/firebase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -9,6 +10,13 @@ void main() async {
   // Initialize language manager
   final languageManager = LanguageManager();
   await languageManager.initialize();
+    try {
+    await FirebaseService.initialize();
+  } catch (e) {
+    debugPrint('Failed to initialize Firebase: $e');
+    // You might want to show an error dialog or handle the error appropriately
+  }
+
   
   runApp(
     MultiProvider(

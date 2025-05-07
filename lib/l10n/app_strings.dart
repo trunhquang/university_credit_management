@@ -68,6 +68,7 @@ abstract class AppStrings {
   String deleteSectionConfirmation(String sectionName);
   String get required;
   String get optional;
+  String get total;
 
   // Course Detail Screen
   String get completedCourses;

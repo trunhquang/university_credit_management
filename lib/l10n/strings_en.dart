@@ -313,6 +313,9 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get courseRemoved => 'Course will be removed';
+
+  @override
+  String get total => 'Total';
 }
 
 class StringsEn {

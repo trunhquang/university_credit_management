@@ -342,4 +342,7 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get update => 'Cập nhật';
+
+  @override
+  String get total => 'Tổng';
 } 
