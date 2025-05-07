@@ -113,6 +113,9 @@ class VietnameseStrings implements AppStrings {
   @override
   String get adLoadFailed => 'Không thể tải quảng cáo. Vui lòng thử lại sau.';
 
+  @override
+  String get functionDeveloping => 'Chức năng này đang được phát triển. Vui lòng quay lại sau.';
+
   // App title
   static const String appTitle = 'Quản lý tín chỉ';
 

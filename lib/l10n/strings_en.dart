@@ -99,6 +99,9 @@ class EnglishStrings implements AppStrings {
   String get adLoadFailed => 'Failed to load ad. Please try again later.';
 
   @override
+  String get functionDeveloping => 'This function is under development.';
+
+  @override
   String get settingsTitle => 'Settings';
 
   @override

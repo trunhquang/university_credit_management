@@ -31,6 +31,7 @@ abstract class AppStrings {
   String get contactEmail;
   String get thankYouForUsing;
   String get adLoadFailed;
+  String get functionDeveloping;
   String get settingsTitle;
   String get englishRequirements;
   String get certificateType;

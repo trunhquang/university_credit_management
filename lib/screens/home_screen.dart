@@ -143,8 +143,11 @@ class _HomeScreenState extends State<HomeScreen> {
       onAdFailed: () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_languageManager.currentStrings.adLoadFailed),
+            content: Text(_languageManager.currentStrings.functionDeveloping),
           ),
+          // SnackBar(
+          //   content: Text(_languageManager.currentStrings.adLoadFailed),
+          // ),
         );
       },
     );
@@ -305,13 +308,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 '/courses',
                 AppColors.courses,
               ),
-              // _buildNavigationCard(
-              //   context,
-              //   _languageManager.currentStrings.progress,
-              //   Icons.timeline,
-              //   '/progress',
-              //   AppColors.progress,
-              // ),
+              _buildNavigationCard(
+                context,
+                _languageManager.currentStrings.progress,
+                Icons.timeline,
+                '/progress',
+                AppColors.progress,
+              ),
               _buildNavigationCard(
                 context,
                 _languageManager.currentStrings.settings,
@@ -319,7 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 '/settings',
                 AppColors.settings,
               ),
-              _buildSupportCard(),
+              // _buildSupportCard(),
             ],
           ),
           const SizedBox(height: 24),
