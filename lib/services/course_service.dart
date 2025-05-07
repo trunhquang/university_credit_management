@@ -60,8 +60,8 @@ class CourseService {
     int totalCredits = 0;
 
     for (var course in courses) {
-      if (course.grade != null) {
-        totalGradePoints += course.grade! * course.credits;
+      if (course.score != null) {
+        totalGradePoints += course.score! * course.credits;
         totalCredits += course.credits;
       }
     }
@@ -103,8 +103,8 @@ class CourseService {
     int totalCredits = 0;
 
     for (var course in courses) {
-      if (course.grade != null) {
-        totalPoints += course.grade! * course.credits;
+      if (course.score != null) {
+        totalPoints += course.score! * course.credits;
         totalCredits += course.credits;
       }
     }

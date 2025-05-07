@@ -52,6 +52,7 @@ class _CourseListScreenState extends State<CourseListScreen> {
     final nameController = TextEditingController(text: course?.name ?? '');
     final creditsController =
         TextEditingController(text: course?.credits.toString() ?? '0');
+    final scoreController = TextEditingController(text: course?.score?.toString() ?? '');
     CourseType selectedType = course?.type ?? CourseType.required;
     CourseStatus selectedStatus = course?.status ?? CourseStatus.notStarted;
 
@@ -143,6 +144,19 @@ class _CourseListScreenState extends State<CourseListScreen> {
                     }
                   },
                 ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: scoreController,
+                  decoration: InputDecoration(
+                    labelText: _languageManager.currentStrings.score,
+                    hintText: _languageManager.currentStrings.enterScore,
+                    enabled: selectedStatus == CourseStatus.completed || 
+                            selectedStatus == CourseStatus.failed,
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  enabled: selectedStatus == CourseStatus.completed || 
+                          selectedStatus == CourseStatus.failed,
+                ),
               ],
             ),
           ),
@@ -159,6 +173,10 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   credits: int.tryParse(creditsController.text) ?? 0,
                   type: selectedType,
                   status: selectedStatus,
+                  score: selectedStatus == CourseStatus.completed || 
+                         selectedStatus == CourseStatus.failed
+                      ? double.tryParse(scoreController.text)
+                      : null,
                 );
 
                 if (course == null) {

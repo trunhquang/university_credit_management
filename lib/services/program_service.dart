@@ -60,7 +60,7 @@ class ProgramService {
                 credits: 3,
                 id: 'BAA00101',
                 type: CourseType.required,
-                status: CourseStatus.completed,
+                status: CourseStatus.notStarted,
                 prerequisiteCourses: [],
               ),
               Course(
@@ -851,7 +851,7 @@ class ProgramService {
     if (section.courseGroups.isEmpty) return 0;
     final completedCredits = section.courseGroups
         .expand((group) => group.courses)
-        .where((course) => course.grade != null && course.grade! >= 5.0)
+        .where((course) => course.score != null && course.score! >= 5.0)
         .fold(0, (sum, course) => sum + course.credits);
     return (completedCredits / totalCredits) * 100;
   }
@@ -923,49 +923,53 @@ class ProgramService {
   Future<Map<String, dynamic>> getMissingRequiredCredits() async {
     final sections = await getSections();
     bool hasMissingCredits = false;
-    // final sectionData = sections.map((section) {
-    //   // Tính toán tín chỉ đã hoàn thành
-    //   final completedRequired = section.courses
-    //       .where((c) => c.status == CourseStatus.completed && c.type == CourseType.required)
-    //       .fold(0, (sum, course) => sum + course.credits);
-    //
-    //   final completedOptional = section.courses
-    //       .where((c) => c.status == CourseStatus.completed && c.type == CourseType.optional)
-    //       .fold(0, (sum, course) => sum + course.credits);
-    //
-    //   // Tính toán tín chỉ đang học
-    //   final inProgressRequired = section.courses
-    //       .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.required)
-    //       .fold(0, (sum, course) => sum + course.credits);
-    //
-    //   final inProgressOptional = section.courses
-    //       .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.optional)
-    //       .fold(0, (sum, course) => sum + course.credits);
-    //
-    //   // Tính toán tín chỉ còn thiếu
-    //   final missingRequired = section.requiredCredits - completedRequired - inProgressRequired;
-    //   final missingOptional = section.optionalCredits - completedOptional - inProgressOptional;
-    //
-    //   if (missingRequired > 0 || missingOptional > 0) {
-    //     hasMissingCredits = true;
-    //   }
-    //
-    //   return {
-    //     'name': section.name,
-    //     'requiredCredits': section.requiredCredits,
-    //     'optionalCredits': section.optionalCredits,
-    //     'completedRequired': completedRequired,
-    //     'completedOptional': completedOptional,
-    //     'inProgressRequired': inProgressRequired,
-    //     'inProgressOptional': inProgressOptional,
-    //     'missingRequired': missingRequired > 0 ? missingRequired : 0,
-    //     'missingOptional': missingOptional > 0 ? missingOptional : 0,
-    //   };
-    // }).toList();
+    final sectionData = sections.map((section) {
+      // Calculate completed credits
+      final completedRequired = section.courseGroups
+          .expand((group) => group.courses)
+          .where((c) => c.status == CourseStatus.completed && c.type == CourseType.required)
+          .fold(0, (sum, course) => sum + course.credits);
+
+      final completedOptional = section.courseGroups
+          .expand((group) => group.courses)
+          .where((c) => c.status == CourseStatus.completed && c.type == CourseType.optional)
+          .fold(0, (sum, course) => sum + course.credits);
+
+      // Calculate in-progress credits
+      final inProgressRequired = section.courseGroups
+          .expand((group) => group.courses)
+          .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.required)
+          .fold(0, (sum, course) => sum + course.credits);
+
+      final inProgressOptional = section.courseGroups
+          .expand((group) => group.courses)
+          .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.optional)
+          .fold(0, (sum, course) => sum + course.credits);
+
+      // Calculate missing credits
+      final missingRequired = section.requiredCredits - completedRequired - inProgressRequired;
+      final missingOptional = section.optionalCredits - completedOptional - inProgressOptional;
+
+      if (missingRequired > 0 || missingOptional > 0) {
+        hasMissingCredits = true;
+      }
+
+      return {
+        'name': section.name,
+        'requiredCredits': section.requiredCredits,
+        'optionalCredits': section.optionalCredits,
+        'completedRequired': completedRequired,
+        'completedOptional': completedOptional,
+        'inProgressRequired': inProgressRequired,
+        'inProgressOptional': inProgressOptional,
+        'missingRequired': missingRequired > 0 ? missingRequired : 0,
+        'missingOptional': missingOptional > 0 ? missingOptional : 0,
+      };
+    }).toList();
 
     return {
-      // 'hasMissingCredits': hasMissingCredits,
-      // 'sections': sectionData,
+      'hasMissingCredits': hasMissingCredits,
+      'sections': sectionData,
     };
   }
 

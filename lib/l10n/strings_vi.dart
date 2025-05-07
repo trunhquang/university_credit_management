@@ -345,4 +345,10 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get total => 'Tổng';
+
+  @override
+  String get enterScore => 'Nhập Điểm';
+
+  @override
+  String get score => 'Điểm';
 } 

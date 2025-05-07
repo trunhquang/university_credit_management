@@ -316,6 +316,12 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get total => 'Total';
+
+  @override
+  String get enterScore => 'Enter Score';
+
+  @override
+  String get score => 'Score';
 }
 
 class StringsEn {

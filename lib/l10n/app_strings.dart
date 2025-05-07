@@ -117,4 +117,8 @@ abstract class AppStrings {
   String get courseId;
   String get status;
   String get courseRemoved;
+
+  // New score-related strings
+  String get enterScore;
+  String get score;
 }

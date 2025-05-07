@@ -200,7 +200,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildOverallProgress(AppStrings strings) {
-    final percentage = _progress!['overallProgress'].toDouble();
+    final percentage = _progress!['overallProgress'].toDouble() ?? 0.0;
     final completedCredits = _progress!['completedCredits'] as int;
     final inProgressCredits = _progress!['inProgressCredits'] as int;
     final totalCredits = _progress!['totalCredits'] as int;

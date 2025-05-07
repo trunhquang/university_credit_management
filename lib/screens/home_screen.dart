@@ -1,9 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_update_service.dart';
 import '../widgets/program_overview.dart';
-import '../widgets/missing_credits_warning.dart';
 import '../services/program_service.dart';
 import '../services/course_service.dart';
 import '../services/ad_manager.dart';
@@ -27,7 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
   late final LanguageManager _languageManager;
 
   Map<String, dynamic>? progress;
-  Map<String, dynamic>? missingCredits;
   double gpa = 0.0;
   bool isLoading = false;
   String errorMessage = '';
@@ -94,46 +91,30 @@ class _HomeScreenState extends State<HomeScreen> {
       errorMessage = '';
     });
 
-    // try {
-      final settings = await _programService.getSettings();
-      final sections = await _programService.getSections();
-      
-      final totalRequiredCredits = sections
-          .fold(0, (sum, section) => sum + section.requiredCredits);
-      final totalOptionalCredits = sections
-          .fold(0, (sum, section) => sum + section.optionalCredits);
-      final totalCredits = totalRequiredCredits + totalOptionalCredits;
+    final settings = await _programService.getSettings();
+    final sections = await _programService.getSections();
+    
+    final totalRequiredCredits = sections
+        .fold(0, (sum, section) => sum + section.requiredCredits);
+    final totalOptionalCredits = sections
+        .fold(0, (sum, section) => sum + section.optionalCredits);
+    final totalCredits = totalRequiredCredits + totalOptionalCredits;
 
-      final programProgress = await _programService.getProgress(totalCredits);
-      final missingRequiredCredits = await _programService.getMissingRequiredCredits();
-      final calculatedGpa = await _courseService.calculateOverallGPA();
+    final programProgress = await _programService.getProgress(totalCredits);
+    final calculatedGpa = await _courseService.calculateOverallGPA();
 
-      if (mounted) {
-        setState(() {
-          progress = programProgress;
-          englishCert = {
-            'type': settings.englishCertType.getDisplayName(_languageManager.currentStrings),
-            'score': settings.englishScore,
-            'required': settings.englishCertType.minScore,
-          };
-          missingCredits = {
-            'hasMissingCredits': missingRequiredCredits['hasMissingCredits'] as bool? ?? false,
-            'sections': (missingRequiredCredits['sections'] as List<dynamic>?)?.map((section) {
-              return Map<String, dynamic>.from(section as Map<String, dynamic>);
-            }).toList() ?? [],
-          };
-          gpa = calculatedGpa;
-          isLoading = false;
-        });
-      }
-    // } catch (e) {
-    //   if (mounted) {
-    //     setState(() {
-    //       errorMessage = e.toString();
-    //       isLoading = false;
-    //     });
-    //   }
-    // }
+    if (mounted) {
+      setState(() {
+        progress = programProgress;
+        englishCert = {
+          'type': settings.englishCertType.getDisplayName(_languageManager.currentStrings),
+          'score': settings.englishScore,
+          'required': settings.englishCertType.minScore,
+        };
+        gpa = calculatedGpa;
+        isLoading = false;
+      });
+    }
   }
 
   void _loadRewardedAd() {
@@ -287,10 +268,6 @@ class _HomeScreenState extends State<HomeScreen> {
               progress: progress!,
               gpa: gpa,
               englishCert: englishCert!,
-            ),
-          if (missingCredits != null && missingCredits!['hasMissingCredits'])
-            MissingCreditsWarning(
-              missingCredits: missingCredits!,
             ),
           const SizedBox(height: 16),
           GridView.count(

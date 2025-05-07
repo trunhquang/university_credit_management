@@ -20,7 +20,7 @@ class Course with ChangeNotifier {
   final CourseType type;
   final CourseStatus status;
   bool _isCompleted = false;
-  double? _grade;
+  double? _score;
   final List<String> prerequisiteCourses;
 
   Course({
@@ -30,24 +30,25 @@ class Course with ChangeNotifier {
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
     double? grade,
+    double? score,
     List<String>? prerequisiteCourses,
   })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-        _grade = grade,
+        _score = score,
         prerequisiteCourses = prerequisiteCourses ?? [];
 
   bool get isCompleted => _isCompleted;
 
-  double? get grade => _grade;
+  double? get score => _score;
 
-  bool get isPassed => _grade != null && _grade! >= 5.0;
+  bool get isPassed => _score != null && _score! >= 5.0;
 
   void toggleCompleted() {
     _isCompleted = !_isCompleted;
     notifyListeners();
   }
 
-  void setGrade(double grade) {
-    _grade = grade;
+  void setScore(double score) {
+    _score = score;
     notifyListeners();
   }
 
@@ -71,7 +72,7 @@ class Course with ChangeNotifier {
       'type': type.toString(),
       'status': status.toString(),
       'isCompleted': _isCompleted,
-      'grade': _grade,
+      'score': _score,
       'prerequisiteCourses': prerequisiteCourses,
     };
   }
@@ -90,6 +91,7 @@ class Course with ChangeNotifier {
         orElse: () => CourseStatus.notStarted,
       ),
       grade: json['grade'],
+      score: json['score'],
       prerequisiteCourses:
           (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
     ).._isCompleted = json['isCompleted'] ?? false;
@@ -102,7 +104,7 @@ class Course with ChangeNotifier {
       id: id,
       type: type,
       status: status,
-      grade: grade,
+      score: score,
       prerequisiteCourses: List.from(prerequisiteCourses),
     );
   }
