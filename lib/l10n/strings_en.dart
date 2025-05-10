@@ -322,6 +322,27 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get score => 'Score';
+
+  @override
+  String get searchCourse => 'Search courses by ID or name';
+
+  @override
+  String get noCoursesFound => 'No courses found';
+
+  @override
+  String get allCourses => 'All Courses';
+
+  @override
+  String get searchCourses => 'Search courses by ID or name';
+
+  @override
+  String get filterBySection => 'Filter by Section';
+
+  @override
+  String get allSections => 'All Sections';
+
+  @override
+  String get type => 'Type';
 }
 
 class StringsEn {

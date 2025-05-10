@@ -29,23 +29,17 @@ class Course with ChangeNotifier {
     required String? id,
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
-    double? grade,
     double? score,
     List<String>? prerequisiteCourses,
   })  : id = id ?? DateTime.now().millisecondsSinceEpoch.toString(),
         _score = score,
         prerequisiteCourses = prerequisiteCourses ?? [];
 
-  bool get isCompleted => _isCompleted;
+  bool get isCompleted => status == CourseStatus.completed;
 
   double? get score => _score;
 
   bool get isPassed => _score != null && _score! >= 5.0;
-
-  void toggleCompleted() {
-    _isCompleted = !_isCompleted;
-    notifyListeners();
-  }
 
   void setScore(double score) {
     _score = score;
@@ -62,6 +56,26 @@ class Course with ChangeNotifier {
   void removePrerequisite(String courseId) {
     prerequisiteCourses.remove(courseId);
     notifyListeners();
+  }
+
+  Course copyWith({
+    String? name,
+    String? id,
+    int? credits,
+    CourseType? type,
+    CourseStatus? status,
+    double? score,
+    List<String>? prerequisiteCourses,
+  }) {
+    return Course(
+      name: name ?? this.name,
+      id: id ?? this.id,
+      credits: credits ?? this.credits,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      score: score ?? _score,
+      prerequisiteCourses: prerequisiteCourses ?? this.prerequisiteCourses,
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -90,22 +104,9 @@ class Course with ChangeNotifier {
         (status) => status.toString() == json['status'],
         orElse: () => CourseStatus.notStarted,
       ),
-      grade: json['grade'],
       score: json['score'],
       prerequisiteCourses:
           (json['prerequisiteCourses'] as List<dynamic>?)?.cast<String>() ?? [],
     ).._isCompleted = json['isCompleted'] ?? false;
-  }
-
-  copyWith({required CourseStatus status}) {
-    return Course(
-      name: name,
-      credits: credits,
-      id: id,
-      type: type,
-      status: status,
-      score: score,
-      prerequisiteCourses: List.from(prerequisiteCourses),
-    );
   }
 }

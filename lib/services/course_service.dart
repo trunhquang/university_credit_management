@@ -92,6 +92,8 @@ class CourseService {
   }
 
   Future<double> calculateOverallGPA() async {
+
+
     final sections = await _programService.getSections();
     final courses = sections
         .expand((section) => section.courseGroups)
@@ -103,7 +105,7 @@ class CourseService {
     int totalCredits = 0;
 
     for (var course in courses) {
-      if (course.score != null) {
+      if (course.score != null && course.isCompleted) {
         totalPoints += course.score! * course.credits;
         totalCredits += course.credits;
       }

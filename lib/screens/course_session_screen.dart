@@ -7,6 +7,7 @@ import '../screens/course_group_screen.dart';
 import '../widgets/section_form_dialog.dart';
 import '../theme/app_colors.dart';
 import '../l10n/language_manager.dart';
+import '../screens/all_courses_screen.dart';
 
 class CourseSessionScreen extends StatefulWidget {
   const CourseSessionScreen({super.key});
@@ -138,6 +139,18 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.list),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AllCoursesScreen(),
+                ),
+              );
+            },
+            tooltip: _languageManager.currentStrings.allCourses,
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _addSection,

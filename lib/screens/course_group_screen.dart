@@ -25,6 +25,8 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
   late Section _section;
   late final LanguageManager _languageManager;
   final _programService = ProgramService();
+  final _searchController = TextEditingController();
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -40,6 +42,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _languageManager.removeListener(_onLanguageChanged);
     super.dispose();
   }
@@ -172,6 +175,16 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
     );
   }
 
+  List<Course> _filterCourses(List<Course> courses) {
+    if (_searchQuery.isEmpty) return courses;
+    
+    final query = _searchQuery.toLowerCase();
+    return courses.where((course) {
+      return course.id.toLowerCase().contains(query) ||
+          course.name.toLowerCase().contains(query);
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,15 +199,52 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionInfo(),
-            const Divider(height: 32),
-            _buildCourseGroupsList(),
-          ],
-        ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: _languageManager.currentStrings.searchCourse,
+                prefixIcon: const Icon(Icons.search),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          setState(() {
+                            _searchController.clear();
+                            _searchQuery = '';
+                          });
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionInfo(),
+                  const Divider(height: 32),
+                  _buildCourseGroupsList(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -335,25 +385,27 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
   }
 
   Widget _buildCourseGroupCard(CourseGroup group) {
-    final completedRequiredCredits = group.courses
+    final filteredCourses = _filterCourses(group.courses);
+    
+    final completedRequiredCredits = filteredCourses
         .where((course) =>
             course.status == CourseStatus.completed &&
             course.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final completedOptionalCredits = group.courses
+    final completedOptionalCredits = filteredCourses
         .where((course) =>
             course.status == CourseStatus.completed &&
             course.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final inProgressRequiredCredits = group.courses
+    final inProgressRequiredCredits = filteredCourses
         .where((course) =>
             course.status == CourseStatus.inProgress &&
             course.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final inProgressOptionalCredits = group.courses
+    final inProgressOptionalCredits = filteredCourses
         .where((course) =>
             course.status == CourseStatus.inProgress &&
             course.type == CourseType.optional)
@@ -368,6 +420,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           InkWell(
             onTap: () {
@@ -511,33 +564,67 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               ],
             ),
           ),
-          ExpansionTile(
-            title: Text(
-              '${_languageManager.currentStrings.courses} (${group.courses.length})',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
+          if (filteredCourses.isNotEmpty)
+            ExpansionTile(
+              title: Text(
+                '${_languageManager.currentStrings.courses} (${filteredCourses.length})',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              children: filteredCourses.map((course) {
+                return CourseCard(
+                  course: course,
+                  languageManager: _languageManager,
+                  onChangeCourseStatus: (status) {
+                    setState(() {
+                      final updatedCourse = course.copyWith(status: status);
+                      final courseIndex = group.courses.indexOf(course);
+                      if (courseIndex != -1) {
+                        group.courses[courseIndex] = updatedCourse;
+                        _saveCourseGroup(group);
+                      }
+                    });
+                  },
+                  onScoreChanged: (score) {
+                    setState(() {
+                      _saveCourseGroup(group);
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          if (filteredCourses.isEmpty && _searchQuery.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  _languageManager.currentStrings.noCoursesFound,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
               ),
             ),
-            children: group.courses.map((course) {
-              return CourseCard(
-                course: course,
-                languageManager: _languageManager,
-                onChangeCourseStatus: (status) async {
-                  var newCourse = course.copyWith(status: status);
-                  await _programService.updateCourse(
-                      _section.id, group.id, newCourse);
-                  final updatedSection =
-                      await _programService.getSection(_section.id);
-                  setState(() {
-                    _section = updatedSection!;
-                  });
-                },
-              );
-            }).toList(),
-          ),
         ],
       ),
     );
+  }
+
+  void _saveCourseGroup(CourseGroup group) async {
+    try {
+      await _programService.updateCourseGroup(_section.id, group);
+      final updatedSection = await _programService.getSection(_section.id);
+      if (updatedSection != null) {
+        setState(() {
+          _section = updatedSection;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error saving course group: $e');
+      // TODO: Show error message to user
+    }
   }
 }

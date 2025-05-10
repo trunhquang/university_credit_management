@@ -121,4 +121,13 @@ abstract class AppStrings {
   // New score-related strings
   String get enterScore;
   String get score;
+
+  String get searchCourse;
+  String get noCoursesFound;
+
+  String get allCourses;
+  String get searchCourses;
+  String get filterBySection;
+  String get allSections;
+  String get type;
 }

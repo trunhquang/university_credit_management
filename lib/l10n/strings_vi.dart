@@ -351,4 +351,25 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get score => 'Điểm';
+
+  @override
+  String get searchCourse => 'Tìm kiếm môn học theo mã hoặc tên';
+
+  @override
+  String get noCoursesFound => 'Không tìm thấy môn học nào';
+
+  @override
+  String get allCourses => 'Tất cả môn học';
+
+  @override
+  String get searchCourses => 'Tìm kiếm môn học theo mã hoặc tên';
+
+  @override
+  String get filterBySection => 'Lọc theo khối kiến thức';
+
+  @override
+  String get allSections => 'Tất cả khối kiến thức';
+
+  @override
+  String get type => 'Loại';
 } 

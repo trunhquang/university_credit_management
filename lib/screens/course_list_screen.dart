@@ -52,7 +52,8 @@ class _CourseListScreenState extends State<CourseListScreen> {
     final nameController = TextEditingController(text: course?.name ?? '');
     final creditsController =
         TextEditingController(text: course?.credits.toString() ?? '0');
-    final scoreController = TextEditingController(text: course?.score?.toString() ?? '');
+    final scoreController =
+        TextEditingController(text: course?.score?.toString() ?? '');
     CourseType selectedType = course?.type ?? CourseType.required;
     CourseStatus selectedStatus = course?.status ?? CourseStatus.notStarted;
 
@@ -150,12 +151,13 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   decoration: InputDecoration(
                     labelText: _languageManager.currentStrings.score,
                     hintText: _languageManager.currentStrings.enterScore,
-                    enabled: selectedStatus == CourseStatus.completed || 
-                            selectedStatus == CourseStatus.failed,
+                    enabled: selectedStatus == CourseStatus.completed ||
+                        selectedStatus == CourseStatus.failed,
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  enabled: selectedStatus == CourseStatus.completed || 
-                          selectedStatus == CourseStatus.failed,
+                  keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
+                  enabled: selectedStatus == CourseStatus.completed ||
+                      selectedStatus == CourseStatus.failed,
                 ),
               ],
             ),
@@ -173,8 +175,8 @@ class _CourseListScreenState extends State<CourseListScreen> {
                   credits: int.tryParse(creditsController.text) ?? 0,
                   type: selectedType,
                   status: selectedStatus,
-                  score: selectedStatus == CourseStatus.completed || 
-                         selectedStatus == CourseStatus.failed
+                  score: selectedStatus == CourseStatus.completed ||
+                          selectedStatus == CourseStatus.failed
                       ? double.tryParse(scoreController.text)
                       : null,
                 );
@@ -387,23 +389,34 @@ class _CourseListScreenState extends State<CourseListScreen> {
                 _refreshData();
               },
               child: GestureDetector(
-                onTap: () => _showAddEditCourseDialog(course),
-                child: CourseCard(
-                  course: course,
-                  languageManager: _languageManager,
-                  onChangeCourseStatus: (status) async {
-                    var newCourse = course.copyWith(status: status);
-                    await _programService.updateCourse(
-                        _section.id, _courseGroup.id, newCourse);
-                    _refreshData();
-                  },
-                ),
-              ),
+                  onTap: () => _showAddEditCourseDialog(course),
+                  child: CourseCard(
+                    course: course,
+                    languageManager: _languageManager,
+                    onChangeCourseStatus: (status) {
+                      _saveCourseGroup(course: course, status: status);
+                    },
+                    onScoreChanged: (score) {
+                      _saveCourseGroup(course: course, score: score);
+                    },
+                  )),
             );
           }).toList(),
         ],
       ),
     );
+  }
+
+  void _saveCourseGroup(
+      {required Course course, CourseStatus? status, double? score}) async {
+    var _course = score ?? course.score;
+    if (status != CourseStatus.completed ) {
+      _course = 0;
+    }
+    var newCourse = course.copyWith(
+        status: status ?? course.status, score: score ?? _course);
+    await _programService.updateCourse(_section.id, _courseGroup.id, newCourse);
+    _refreshData();
   }
 
   Future<void> _refreshData() async {
