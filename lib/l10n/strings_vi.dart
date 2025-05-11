@@ -372,4 +372,10 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get type => 'Loại';
+
+  @override
+  String get filterByStatus => 'Lọc theo trạng thái';
+
+  @override
+  String get allStatuses => 'Tất cả trạng thái';
 } 

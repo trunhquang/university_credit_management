@@ -102,6 +102,8 @@ abstract class AppStrings {
   String get inProgress => 'Đang học';
   String get notStarted => 'Chưa học';
   String get failed => 'Không đạt';
+  String get filterByStatus => 'Filter by Status';
+  String get allStatuses => 'All Statuses';
 
   // Section Form Dialog
   String get editSection;

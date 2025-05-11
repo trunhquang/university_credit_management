@@ -246,24 +246,50 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
     final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
     final totalCredits = section.requiredCredits + section.optionalCredits;
 
+    // Check if section is completed
+    final isSectionCompleted = completedRequiredCredits >= section.requiredCredits &&
+        completedOptionalCredits >= section.optionalCredits;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
         children: [
           ListTile(
-            title: Text(
-              section.name,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    section.name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isSectionCompleted
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                      decoration: isSectionCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                    ),
+                  ),
+                ),
+                if (isSectionCompleted)
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 20,
+                  ),
+              ],
             ),
             subtitle: Text(
               section.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: isSectionCompleted
+                    ? AppColors.textSecondary
+                    : AppColors.textSecondary,
+                decoration: isSectionCompleted
+                    ? TextDecoration.lineThrough
+                    : null,
               ),
             ),
             trailing: PopupMenuButton<String>(
@@ -319,7 +345,11 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                 LinearProgressIndicator(
                   value: totalCompletedCredits / totalCredits,
                   backgroundColor: AppColors.progressBackground,
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.progressValue),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isSectionCompleted
+                        ? AppColors.success
+                        : AppColors.progressValue,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -329,7 +359,17 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                       text: TextSpan(
                         style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
                         children: [
-                          TextSpan(text: '${_languageManager.currentStrings.required}: '),
+                          TextSpan(
+                            text: '${_languageManager.currentStrings.required}: ',
+                            style: TextStyle(
+                              color: completedRequiredCredits >= section.requiredCredits
+                                  ? AppColors.textSecondary
+                                  : null,
+                              decoration: completedRequiredCredits >= section.requiredCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                           TextSpan(
                             text: '$completedRequiredCredits',
                             style: const TextStyle(color: AppColors.success),
@@ -339,7 +379,14 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                               text: ' (+$inProgressRequiredCredits)',
                               style: const TextStyle(color: AppColors.progressInProgress),
                             ),
-                          TextSpan(text: '/${section.requiredCredits}'),
+                          TextSpan(
+                            text: '/${section.requiredCredits}',
+                            style: TextStyle(
+                              decoration: completedRequiredCredits >= section.requiredCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -347,7 +394,17 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                       text: TextSpan(
                         style: DefaultTextStyle.of(context).style.copyWith(fontSize: 12),
                         children: [
-                          TextSpan(text: '${_languageManager.currentStrings.optional}: '),
+                          TextSpan(
+                            text: '${_languageManager.currentStrings.optional}: ',
+                            style: TextStyle(
+                              color: completedOptionalCredits >= section.optionalCredits
+                                  ? AppColors.textSecondary
+                                  : null,
+                              decoration: completedOptionalCredits >= section.optionalCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                           TextSpan(
                             text: '$completedOptionalCredits',
                             style: const TextStyle(color: AppColors.success),
@@ -357,7 +414,14 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                               text: ' (+$inProgressOptionalCredits)',
                               style: const TextStyle(color: AppColors.progressInProgress),
                             ),
-                          TextSpan(text: '/${section.optionalCredits}'),
+                          TextSpan(
+                            text: '/${section.optionalCredits}',
+                            style: TextStyle(
+                              decoration: completedOptionalCredits >= section.optionalCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -371,7 +435,17 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                     children: [
-                      TextSpan(text: '${_languageManager.currentStrings.totalCredits}: '),
+                      TextSpan(
+                        text: '${_languageManager.currentStrings.totalCredits}: ',
+                        style: TextStyle(
+                          color: isSectionCompleted
+                              ? AppColors.textSecondary
+                              : null,
+                          decoration: isSectionCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
                       TextSpan(
                         text: '$totalCompletedCredits',
                         style: const TextStyle(color: AppColors.success),
@@ -381,7 +455,14 @@ class _CourseSessionScreenState extends State<CourseSessionScreen> {
                           text: ' (+$totalInProgressCredits)',
                           style: const TextStyle(color: AppColors.progressInProgress),
                         ),
-                      TextSpan(text: '/$totalCredits'),
+                      TextSpan(
+                        text: '/$totalCredits',
+                        style: TextStyle(
+                          decoration: isSectionCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
                     ],
                   ),
                 ),

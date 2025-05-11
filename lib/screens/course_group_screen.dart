@@ -27,6 +27,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
   final _programService = ProgramService();
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  CourseStatus? _selectedStatus;
 
   @override
   void initState() {
@@ -176,12 +177,22 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
   }
 
   List<Course> _filterCourses(List<Course> courses) {
-    if (_searchQuery.isEmpty) return courses;
-    
-    final query = _searchQuery.toLowerCase();
     return courses.where((course) {
-      return course.id.toLowerCase().contains(query) ||
-          course.name.toLowerCase().contains(query);
+      // Filter by search query
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        if (!course.id.toLowerCase().contains(query) &&
+            !course.name.toLowerCase().contains(query)) {
+          return false;
+        }
+      }
+
+      // Filter by status
+      if (_selectedStatus != null && course.status != _selectedStatus) {
+        return false;
+      }
+
+      return true;
     }).toList();
   }
 
@@ -203,33 +214,64 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: _languageManager.currentStrings.searchCourse,
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          setState(() {
-                            _searchController.clear();
-                            _searchQuery = '';
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: _languageManager.currentStrings.searchCourse,
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _searchController.clear();
+                                _searchQuery = '';
+                              });
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
                 ),
-                filled: true,
-                fillColor: Colors.white,
-              ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
+                const SizedBox(height: 16),
+                DropdownButtonFormField<CourseStatus?>(
+                  value: _selectedStatus,
+                  decoration: InputDecoration(
+                    labelText: _languageManager.currentStrings.filterByStatus,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(_languageManager.currentStrings.allStatuses),
+                    ),
+                    ...CourseStatus.values.map((status) => DropdownMenuItem(
+                          value: status,
+                          child: Text(_getStatusText(status)),
+                        )),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedStatus = value;
+                    });
+                  },
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -247,6 +289,19 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         ],
       ),
     );
+  }
+
+  String _getStatusText(CourseStatus status) {
+    switch (status) {
+      case CourseStatus.notStarted:
+        return _languageManager.currentStrings.notStarted;
+      case CourseStatus.inProgress:
+        return _languageManager.currentStrings.inProgress;
+      case CourseStatus.completed:
+        return _languageManager.currentStrings.completed;
+      case CourseStatus.failed:
+        return _languageManager.currentStrings.failed;
+    }
   }
 
   Widget _buildSectionInfo() {
@@ -278,6 +333,10 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
             course.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
+    // Check if section is completed
+    final isSectionCompleted = completedRequiredCredits >= _section.requiredCredits &&
+        completedOptionalCredits >= _section.optionalCredits;
+
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -285,19 +344,39 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _section.name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _section.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      decoration: isSectionCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                      color: isSectionCompleted
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                if (isSectionCompleted)
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 24,
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               _section.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: isSectionCompleted
+                    ? AppColors.textSecondary
+                    : AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -306,6 +385,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               _section.requiredCredits,
               completedCredits: completedRequiredCredits,
               inProgressCredits: inProgressRequiredCredits,
+              isCompleted: completedRequiredCredits >= _section.requiredCredits,
             ),
             const SizedBox(height: 4),
             _buildCreditInfo(
@@ -313,6 +393,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               _section.optionalCredits,
               completedCredits: completedOptionalCredits,
               inProgressCredits: inProgressOptionalCredits,
+              isCompleted: completedOptionalCredits >= _section.optionalCredits,
             ),
             const SizedBox(height: 4),
             _buildCreditInfo(
@@ -323,6 +404,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               inProgressCredits:
                   inProgressRequiredCredits + inProgressOptionalCredits,
               isTotal: true,
+              isCompleted: isSectionCompleted,
             ),
           ],
         ),
@@ -336,18 +418,26 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
     int? completedCredits,
     int? inProgressCredits,
     bool isTotal = false,
+    bool isCompleted = false,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label),
+        Text(
+          label,
+          style: TextStyle(
+            color: isCompleted ? AppColors.textSecondary : null,
+            decoration: isCompleted ? TextDecoration.lineThrough : null,
+          ),
+        ),
         Row(
           children: [
             Text(
               completedCredits != null ? '$completedCredits' : '0',
               style: TextStyle(
-                color: AppColors.success,
+                color: isCompleted ? AppColors.success : AppColors.success,
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                decoration: isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
             if (inProgressCredits != null && inProgressCredits > 0) ...[
@@ -364,6 +454,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               style: TextStyle(
                 fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                 color: isTotal ? AppColors.primary : null,
+                decoration: isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
           ],
@@ -417,6 +508,10 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         inProgressRequiredCredits + inProgressOptionalCredits;
     final totalCredits = group.requiredCredits + group.optionalCredits;
 
+    // Check if group is completed
+    final isGroupCompleted = completedRequiredCredits >= group.requiredCredits &&
+        completedOptionalCredits >= group.optionalCredits;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -442,19 +537,41 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
             },
             child: ListTile(
               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-              title: Text(
-                group.name,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      group.name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: isGroupCompleted
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
+                        decoration: isGroupCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
+                      ),
+                    ),
+                  ),
+                  if (isGroupCompleted)
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.success,
+                      size: 20,
+                    ),
+                ],
               ),
               subtitle: Text(
                 group.description,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: isGroupCompleted
+                      ? AppColors.textSecondary
+                      : AppColors.textSecondary,
+                  decoration: isGroupCompleted
+                      ? TextDecoration.lineThrough
+                      : null,
                 ),
               ),
               trailing: Row(
@@ -481,8 +598,11 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                 LinearProgressIndicator(
                   value: totalCompletedCredits / totalCredits,
                   backgroundColor: AppColors.progressBackground,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.progressValue),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isGroupCompleted
+                        ? AppColors.success
+                        : AppColors.progressValue,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -495,8 +615,16 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                             .copyWith(fontSize: 12),
                         children: [
                           TextSpan(
-                              text:
-                                  '${_languageManager.currentStrings.required}: '),
+                            text: '${_languageManager.currentStrings.required}: ',
+                            style: TextStyle(
+                              color: completedRequiredCredits >= group.requiredCredits
+                                  ? AppColors.textSecondary
+                                  : null,
+                              decoration: completedRequiredCredits >= group.requiredCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                           TextSpan(
                             text: '$completedRequiredCredits',
                             style: const TextStyle(color: AppColors.success),
@@ -507,7 +635,14 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                               style: const TextStyle(
                                   color: AppColors.progressInProgress),
                             ),
-                          TextSpan(text: '/${group.requiredCredits}'),
+                          TextSpan(
+                            text: '/${group.requiredCredits}',
+                            style: TextStyle(
+                              decoration: completedRequiredCredits >= group.requiredCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -518,8 +653,16 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                             .copyWith(fontSize: 12),
                         children: [
                           TextSpan(
-                              text:
-                                  '${_languageManager.currentStrings.optional}: '),
+                            text: '${_languageManager.currentStrings.optional}: ',
+                            style: TextStyle(
+                              color: completedOptionalCredits >= group.optionalCredits
+                                  ? AppColors.textSecondary
+                                  : null,
+                              decoration: completedOptionalCredits >= group.optionalCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                           TextSpan(
                             text: '$completedOptionalCredits',
                             style: const TextStyle(color: AppColors.success),
@@ -530,7 +673,14 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                               style: const TextStyle(
                                   color: AppColors.progressInProgress),
                             ),
-                          TextSpan(text: '/${group.optionalCredits}'),
+                          TextSpan(
+                            text: '/${group.optionalCredits}',
+                            style: TextStyle(
+                              decoration: completedOptionalCredits >= group.optionalCredits
+                                  ? TextDecoration.lineThrough
+                                  : null,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -545,8 +695,16 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                         ),
                     children: [
                       TextSpan(
-                          text:
-                              '${_languageManager.currentStrings.totalCredits}: '),
+                        text: '${_languageManager.currentStrings.totalCredits}: ',
+                        style: TextStyle(
+                          color: isGroupCompleted
+                              ? AppColors.textSecondary
+                              : null,
+                          decoration: isGroupCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
                       TextSpan(
                         text: '$totalCompletedCredits',
                         style: const TextStyle(color: AppColors.success),
@@ -557,7 +715,14 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                           style: const TextStyle(
                               color: AppColors.progressInProgress),
                         ),
-                      TextSpan(text: '/$totalCredits'),
+                      TextSpan(
+                        text: '/$totalCredits',
+                        style: TextStyle(
+                          decoration: isGroupCompleted
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
                     ],
                   ),
                 ),

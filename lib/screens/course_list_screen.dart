@@ -234,6 +234,15 @@ class _CourseListScreenState extends State<CourseListScreen> {
     final totalCredits =
         _courseGroup.requiredCredits + _courseGroup.optionalCredits;
 
+    // Check if group is completed
+    final isGroupCompleted = completedRequiredCredits >= _courseGroup.requiredCredits &&
+        completedOptionalCredits >= _courseGroup.optionalCredits;
+
+    // Update group completion status if needed
+    if (isGroupCompleted != _courseGroup.isCompleted) {
+      _updateGroupCompletionStatus(isGroupCompleted);
+    }
+
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -241,27 +250,50 @@ class _CourseListScreenState extends State<CourseListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _courseGroup.name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _courseGroup.name,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      decoration: _courseGroup.isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
+                      color: _courseGroup.isCompleted
+                          ? AppColors.textSecondary
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                if (_courseGroup.isCompleted)
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.success,
+                    size: 24,
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             Text(
               _courseGroup.description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: _courseGroup.isCompleted
+                    ? AppColors.textSecondary
+                    : AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: totalCompletedCredits / totalCredits,
               backgroundColor: AppColors.progressBackground,
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(AppColors.progressValue),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                _courseGroup.isCompleted
+                    ? AppColors.success
+                    : AppColors.progressValue,
+              ),
             ),
             const SizedBox(height: 8),
             Row(
@@ -344,6 +376,12 @@ class _CourseListScreenState extends State<CourseListScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _updateGroupCompletionStatus(bool isCompleted) async {
+    final updatedGroup = _courseGroup.copyWith(isCompleted: isCompleted);
+    await _programService.updateCourseGroup(_section.id, updatedGroup);
+    _refreshData();
   }
 
   Widget _buildCourseList() {

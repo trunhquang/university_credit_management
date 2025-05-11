@@ -27,6 +27,7 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _selectedSectionId = 'all';
   String _searchQuery = '';
+  CourseStatus? _selectedStatus;
 
   @override
   void initState() {
@@ -81,6 +82,11 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
           if (!section.allCourses.contains(course)) {
             return false;
           }
+        }
+
+        // Filter by status
+        if (_selectedStatus != null && course.status != _selectedStatus) {
+          return false;
         }
 
         // Filter by search query
@@ -187,6 +193,33 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
                     }
                   },
                 ),
+                const SizedBox(height: 16),
+                // Status filter dropdown
+                DropdownButtonFormField<CourseStatus?>(
+                  value: _selectedStatus,
+                  decoration: InputDecoration(
+                    labelText: _languageManager.currentStrings.filterByStatus,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      child: Text(_languageManager.currentStrings.allStatuses),
+                    ),
+                    ...CourseStatus.values.map((status) => DropdownMenuItem(
+                          value: status,
+                          child: Text(_getStatusText(status)),
+                        )),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedStatus = value;
+                      _applyFilters();
+                    });
+                  },
+                ),
               ],
             ),
           ),
@@ -196,6 +229,19 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
         ],
       ),
     );
+  }
+
+  String _getStatusText(CourseStatus status) {
+    switch (status) {
+      case CourseStatus.notStarted:
+        return _languageManager.currentStrings.notStarted;
+      case CourseStatus.inProgress:
+        return _languageManager.currentStrings.inProgress;
+      case CourseStatus.completed:
+        return _languageManager.currentStrings.completed;
+      case CourseStatus.failed:
+        return _languageManager.currentStrings.failed;
+    }
   }
 
   Widget _buildCourseList() {

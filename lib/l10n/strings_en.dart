@@ -17,6 +17,24 @@ class EnglishStrings implements AppStrings {
   String get addCourse => 'Add Course';
 
   @override
+  String get editCourse => 'Edit Course';
+
+  @override
+  String get courseId => 'Course ID';
+
+  @override
+  String get courseName => 'Course Name';
+
+  @override
+  String get courseType => 'Course Type';
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get courseRemoved => 'Course will be removed';
+
+  @override
   String get majorName => 'Major Name';
 
   @override
@@ -24,9 +42,6 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get subsectionName => 'Subsection Name';
-
-  @override
-  String get courseName => 'Course Name';
 
   @override
   String get credits => 'Credits';
@@ -72,7 +87,7 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get supportDescription => 'You can support by watching a short ad. '
-      'This will help the author to continue developing the app.';
+      'This will help the author have more motivation to develop the app better.';
 
   @override
   String get loadingAd => 'Loading ad...';
@@ -87,19 +102,19 @@ class EnglishStrings implements AppStrings {
   String get close => 'Close';
 
   @override
-  String get retry => 'Try Again';
+  String get retry => 'Retry';
 
   @override
-  String get contactEmail => 'Contact us at: trunhquang9@gmail.com';
+  String get contactEmail => 'For any contributions, please send to: trunhquang9@gmail.com';
 
   @override
-  String get thankYouForUsing => 'Thank you for using our app!';
+  String get thankYouForUsing => 'Thank you for using the app!';
 
   @override
-  String get adLoadFailed => 'Failed to load ad. Please try again later.';
+  String get adLoadFailed => 'Could not load ad. Please try again later.';
 
   @override
-  String get functionDeveloping => 'This function is under development.';
+  String get functionDeveloping => 'This feature is under development. Please come back later.';
 
   @override
   String get settingsTitle => 'Settings';
@@ -117,7 +132,7 @@ class EnglishStrings implements AppStrings {
   String get achievedScore => 'Achieved Score';
 
   @override
-  String get minimumScoreHelper => 'Enter the minimum required score';
+  String get minimumScoreHelper => 'Enter required minimum score';
 
   @override
   String get achievedScoreHelper => 'Enter your achieved score';
@@ -135,7 +150,7 @@ class EnglishStrings implements AppStrings {
   String get loadingSettingsError => 'Error loading settings';
 
   @override
-  String get pleaseEnterScore => 'Please enter a score';
+  String get pleaseEnterScore => 'Please enter score';
 
   @override
   String get pleaseEnterValidNumber => 'Please enter a valid number';
@@ -150,13 +165,28 @@ class EnglishStrings implements AppStrings {
   String get englishRequirementDescription => 'You need to achieve one of the following English certificates:';
 
   @override
-  String get englishPassed => 'Requirements met';
+  String get englishPassed => 'English requirement met';
 
   @override
-  String get englishNotPassed => 'Requirements not met';
+  String get englishNotPassed => 'English requirement not met';
 
   @override
   String get noCertificate => 'No certificate';
+
+  @override
+  String get englishRequirementMet => 'English requirement met';
+
+  @override
+  String get englishRequirementNotMet => 'English requirement not met';
+
+  @override
+  String get settingsUpdated => 'Settings updated successfully';
+
+  @override
+  String errorLoadingSettings(String error) => 'Error loading settings: $error';
+
+  @override
+  String errorSavingSettings(String error) => 'Error saving settings: $error';
 
   @override
   String get programOverview => 'Program Overview';
@@ -177,33 +207,27 @@ class EnglishStrings implements AppStrings {
   String get requiredScore => 'Required Score';
 
   @override
-  String get edit => 'Edit';
-
-  @override
-  String get delete => 'Delete';
-
-  @override
   String get confirmDelete => 'Confirm Delete';
 
   @override
-  String get sections => 'Knowledge Blocks';
+  String get sections => 'Sections';
 
   @override
-  String get noSections => 'No knowledge blocks yet';
+  String get noSections => 'No sections';
 
   @override
-  String get sectionAdded => 'Knowledge block added';
+  String get sectionAdded => 'Section added';
 
   @override
-  String get sectionUpdated => 'Knowledge block updated';
+  String get sectionUpdated => 'Section updated';
 
   @override
-  String get sectionDeleted => 'Knowledge block deleted';
+  String get sectionDeleted => 'Section deleted';
 
   @override
   String deleteSectionConfirmation(String sectionName) => 
-      'Are you sure you want to delete the knowledge block "$sectionName"?\n'
-      'All courses in this block will also be deleted.';
+      'Are you sure you want to delete section "$sectionName"?\n'
+      'All courses in this section will also be deleted.';
 
   @override
   String get required => 'Required';
@@ -221,9 +245,6 @@ class EnglishStrings implements AppStrings {
   String get notStartedCourses => 'Not Started';
 
   @override
-  String get courseType => 'Course Type';
-
-  @override
   String get grade => 'Grade';
 
   @override
@@ -231,7 +252,7 @@ class EnglishStrings implements AppStrings {
 
   @override
   String courseDeleteConfirmation(String courseName) => 
-      'Are you sure you want to delete the course "$courseName"?';
+      'Are you sure you want to delete course "$courseName"?';
 
   @override
   String get courseGroups => 'Course Groups';
@@ -261,13 +282,13 @@ class EnglishStrings implements AppStrings {
   String get selected => 'selected';
 
   @override
-  String get clearSelection => 'Clear selection';
+  String get clearSelection => 'Clear Selection';
 
   @override
-  String get groupMinTwoCourses => 'Each group must have at least 2 courses';
+  String get groupMinTwoCourses => 'Each group needs at least 2 courses';
 
   @override
-  String get removeFromGroup => 'Remove from group';
+  String get removeFromGroup => 'Remove from Group';
 
   @override
   String get completed => 'Completed';
@@ -294,25 +315,13 @@ class EnglishStrings implements AppStrings {
   String get optionalCreditsRequired => 'Please enter optional credits';
 
   @override
-  String get creditsMustBePositive => 'Credits must be a positive number';
+  String get creditsMustBePositive => 'Credits must be a non-negative integer';
 
   @override
   String get add => 'Add';
 
   @override
   String get update => 'Update';
-
-  @override
-  String get editCourse => 'Edit Course';
-
-  @override
-  String get courseId => 'Course ID';
-
-  @override
-  String get status => 'Status';
-
-  @override
-  String get courseRemoved => 'Course will be removed';
 
   @override
   String get total => 'Total';
@@ -343,6 +352,18 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get type => 'Type';
+
+  @override
+  String get filterByStatus => 'Filter by Status';
+
+  @override
+  String get allStatuses => 'All Statuses';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get delete => 'Delete';
 }
 
 class StringsEn {
