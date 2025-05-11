@@ -120,22 +120,50 @@ class _CourseListScreenState extends State<CourseListScreen> {
                     labelText: _languageManager.currentStrings.status,
                   ),
                   items: [
-                    DropdownMenuItem(
-                      value: CourseStatus.notStarted,
-                      child: Text(_languageManager.currentStrings.notStarted),
-                    ),
-                    DropdownMenuItem(
-                      value: CourseStatus.inProgress,
-                      child: Text(_languageManager.currentStrings.inProgress),
-                    ),
-                    DropdownMenuItem(
-                      value: CourseStatus.completed,
-                      child: Text(_languageManager.currentStrings.completed),
-                    ),
-                    DropdownMenuItem(
-                      value: CourseStatus.failed,
-                      child: Text(_languageManager.currentStrings.failed),
-                    ),
+                    ...CourseStatus.values.asMap().entries.map((entry) {
+                      final status = entry.value;
+                      var text = "";
+                      switch (status) {
+                        case CourseStatus.notStarted:
+                          text = _languageManager.currentStrings.notStarted;
+                          break;
+                        case CourseStatus.inProgress:
+                          text = _languageManager.currentStrings.inProgress;
+                          break;
+                        case CourseStatus.completed:
+                          text = _languageManager.currentStrings.completed;
+                          break;
+                        case CourseStatus.failed:
+                          text = _languageManager.currentStrings.failed;
+                          break;
+                        case CourseStatus.registering:
+                          text = _languageManager.currentStrings.registering;
+                          break;
+                        case CourseStatus.needToRegister:
+                          text = _languageManager.currentStrings.needToRegister;
+                          break;
+                      }
+                      return DropdownMenuItem(
+                        value: status,
+                        child: Text(text),
+                      );
+                    })
+                    // DropdownMenuItem(
+                    //   value: CourseStatus.notStarted,
+                    //   child: Text(_languageManager.currentStrings.notStarted),
+                    // ),
+                    // DropdownMenuItem(
+                    //   value: CourseStatus.inProgress,
+                    //   child: Text(_languageManager.currentStrings.inProgress),
+                    // ),
+                    // DropdownMenuItem(
+                    //   value: CourseStatus.completed,
+                    //   child: Text(_languageManager.currentStrings.completed),
+                    // ),
+                    // DropdownMenuItem(
+                    //   value: CourseStatus.failed,
+                    //   child: Text(_languageManager.currentStrings.failed),
+                    // ),
                   ],
                   onChanged: (value) {
                     if (value != null) {
