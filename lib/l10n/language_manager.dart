@@ -13,7 +13,7 @@ class LanguageManager extends ChangeNotifier {
 
   AppStrings _currentStrings = EnglishStrings();
   String _currentLanguage = 'English';
-  String _currentLanguageCode = 'en';
+  String _currentLanguageCode = 'vi';
 
   AppStrings get currentStrings => _currentStrings;
   String get currentLanguage => _currentLanguage;
