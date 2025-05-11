@@ -2,7 +2,7 @@ import 'app_strings.dart';
 
 class VietnameseStrings implements AppStrings {
   @override
-  String get appName => 'Quản lý tín chỉ';
+  String get appName => 'Quản lý tín chỉ đại học';
 
   @override
   String get addMajor => 'Thêm ngành học';
@@ -353,7 +353,7 @@ class VietnameseStrings implements AppStrings {
   String get score => 'Điểm';
 
   @override
-  String get searchCourse => 'Tìm kiếm môn học theo mã hoặc tên';
+  String get searchCourse => 'Tìm kiếm môn học...';
 
   @override
   String get noCoursesFound => 'Không tìm thấy môn học nào';
@@ -380,11 +380,74 @@ class VietnameseStrings implements AppStrings {
   String get allStatuses => 'Tất cả trạng thái';
 
   @override
-  String get registering => 'Đang đăng ký';
+  String get registering => 'Đăng ký học phần';
 
   @override
   String get needToRegister => 'Cần đăng ký';
 
   @override
   String get courseStatus => 'Trạng thái môn học';
+
+  @override
+  String get noRegisteringCourses => 'Không có môn học đang đăng ký';
+
+  @override
+  String get semester => 'Học kỳ';
+
+  @override
+  String get createSemester => 'Tạo học kỳ';
+
+  @override
+  String get pleaseEnterSemester => 'Vui lòng nhập học kỳ';
+
+  @override
+  String get pleaseSelectCourses => 'Vui lòng chọn môn học để đăng ký';
+
+  @override
+  String get register => 'Đăng ký';
+
+  @override
+  String get semesterCreated => 'Đã tạo học kỳ';
+
+  @override
+  String get pleaseSelectSemester => 'Vui lòng chọn học kỳ';
+
+  @override
+  String get coursesRegistered => 'Đăng ký môn học thành công';
+
+  @override
+  String get open => 'Đang mở';
+
+  @override
+  String get closed => 'Đã đóng';
+
+  @override
+  String get openCourse => 'Mở môn học';
+
+  @override
+  String get closeCourse => 'Đóng môn học';
+
+  @override
+  String get selectedCourses => 'Môn học đã chọn';
+
+  @override
+  String get noCoursesSelected => 'Chưa chọn môn học nào';
+
+  @override
+  String get registrationSuccess => 'Đăng ký thành công';
+
+  @override
+  String get registrationFailed => 'Đăng ký thất bại';
+
+  @override
+  String get registeringCourses => 'Đăng ký môn học';
+
+  @override
+  String get language => 'Ngôn ngữ';
+
+  @override
+  String get english => 'Tiếng Anh';
+
+  @override
+  String get vietnamese => 'Tiếng Việt';
 } 

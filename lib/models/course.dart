@@ -21,6 +21,7 @@ class Course with ChangeNotifier {
   final int credits;
   final CourseType type;
   final CourseStatus status;
+  final bool isOpen;
   bool _isCompleted = false;
   double? _score;
   final List<String> prerequisiteCourses;
@@ -29,6 +30,7 @@ class Course with ChangeNotifier {
     required this.name,
     required this.credits,
     required String? id,
+    this.isOpen = false,
     this.type = CourseType.required,
     this.status = CourseStatus.notStarted,
     double? score,
@@ -67,12 +69,14 @@ class Course with ChangeNotifier {
     CourseType? type,
     CourseStatus? status,
     double? score,
+    bool? isOpen,
     List<String>? prerequisiteCourses,
   }) {
     return Course(
       name: name ?? this.name,
       id: id ?? this.id,
       credits: credits ?? this.credits,
+      isOpen: isOpen ?? this.isOpen,
       type: type ?? this.type,
       status: status ?? this.status,
       score: score ?? _score,
@@ -89,12 +93,14 @@ class Course with ChangeNotifier {
       'status': status.toString(),
       'isCompleted': _isCompleted,
       'score': _score,
+      'isOpen': isOpen,
       'prerequisiteCourses': prerequisiteCourses,
     };
   }
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
+      isOpen: json['isOpen'] ?? false,
       name: json['name'],
       id: json['id'],
       credits: json['credits'],

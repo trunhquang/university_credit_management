@@ -137,4 +137,30 @@ abstract class AppStrings {
   String get needToRegister => 'Need to Register';
 
   String get courseStatus => 'Trạng thái môn học';
+
+  String get noRegisteringCourses => 'No registering courses';
+
+  String get semester => 'Semester';
+  String get createSemester => 'Create Semester';
+  String get pleaseEnterSemester => 'Please enter semester';
+  String get pleaseSelectCourses => 'Please select courses to register';
+  String get register => 'Register';
+  String get semesterCreated => 'Semester created';
+  String get pleaseSelectSemester => 'Please select a semester';
+  String get coursesRegistered => 'Courses registered successfully';
+
+  String get open;
+  String get closed;
+  String get openCourse;
+  String get closeCourse;
+
+  String get selectedCourses;
+
+  String get language;
+  String get english;
+  String get vietnamese;
+  String get noCoursesSelected;
+  String get registrationSuccess;
+  String get registrationFailed;
+  String get registeringCourses;
 }

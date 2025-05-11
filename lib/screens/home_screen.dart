@@ -10,6 +10,7 @@ import '../theme/app_colors.dart';
 import 'course_session_screen.dart';
 import 'progress_screen.dart';
 import 'settings_screen.dart';
+import 'registering_course_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -68,6 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case '/settings':
         screen = const SettingsScreen();
+        break;
+      case '/registering':
+        screen =  RegisteringCourseScreen();
         break;
       default:
         return;
@@ -298,6 +302,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.settings,
                 '/settings',
                 AppColors.settings,
+              ),
+              _buildNavigationCard(
+                context,
+                _languageManager.currentStrings.registering,
+                Icons.app_registration,
+                '/registering',
+                AppColors.info,
               ),
               // _buildSupportCard(),
             ],

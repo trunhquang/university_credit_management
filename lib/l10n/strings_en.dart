@@ -2,7 +2,7 @@ import 'app_strings.dart';
 
 class EnglishStrings implements AppStrings {
   @override
-  String get appName => 'Credit Management';
+  String get appName => 'University Credit Management';
 
   @override
   String get addMajor => 'Add Major';
@@ -333,7 +333,7 @@ class EnglishStrings implements AppStrings {
   String get score => 'Score';
 
   @override
-  String get searchCourse => 'Search courses by ID or name';
+  String get searchCourse => 'Search course...';
 
   @override
   String get noCoursesFound => 'No courses found';
@@ -366,13 +366,76 @@ class EnglishStrings implements AppStrings {
   String get delete => 'Delete';
 
   @override
-  String get registering => 'Registering';
+  String get registering => 'Register Credit';
 
   @override
   String get needToRegister => 'Need to Register';
 
   @override
   String get courseStatus => 'Course Status';
+
+  @override
+  String get noRegisteringCourses => 'No registering courses';
+
+  @override
+  String get semester => 'Semester';
+
+  @override
+  String get createSemester => 'Create Semester';
+
+  @override
+  String get pleaseEnterSemester => 'Please enter semester';
+
+  @override
+  String get pleaseSelectCourses => 'Please select courses to register';
+
+  @override
+  String get register => 'Register';
+
+  @override
+  String get semesterCreated => 'Semester created';
+
+  @override
+  String get pleaseSelectSemester => 'Please select a semester';
+
+  @override
+  String get coursesRegistered => 'Courses registered successfully';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get closed => 'Closed';
+
+  @override
+  String get openCourse => 'Open Course';
+
+  @override
+  String get closeCourse => 'Close Course';
+
+  @override
+  String get selectedCourses => 'Selected Courses';
+
+  @override
+  String get noCoursesSelected => 'No courses selected';
+
+  @override
+  String get registrationSuccess => 'Registration successful';
+
+  @override
+  String get registrationFailed => 'Registration failed';
+
+  @override
+  String get registeringCourses => 'Registering Courses';
+
+  @override
+  String get language => 'Language';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get vietnamese => 'Vietnamese';
 }
 
 class StringsEn {
