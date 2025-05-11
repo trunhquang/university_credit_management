@@ -2,7 +2,7 @@ import 'app_strings.dart';
 
 class VietnameseStrings implements AppStrings {
   @override
-  String get appName => 'Quản lý tín chỉ đại học';
+  String get appName => 'Quản lý tín chỉ';
 
   @override
   String get addMajor => 'Thêm ngành học';

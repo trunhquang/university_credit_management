@@ -134,7 +134,7 @@ class RegisteringCourseCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 2),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -192,7 +192,6 @@ class RegisteringCourseCard extends StatelessWidget {
                 ),
                 onPressed: () => onToggleRegistration(course),
                 tooltip: _canRegister ? 'Đăng ký học phần' : 'Hủy đăng ký',
-                padding: const EdgeInsets.only(left: 8),
                 constraints: const BoxConstraints(),
               ),
             IconButton(

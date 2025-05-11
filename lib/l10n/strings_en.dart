@@ -2,7 +2,7 @@ import 'app_strings.dart';
 
 class EnglishStrings implements AppStrings {
   @override
-  String get appName => 'University Credit Management';
+  String get appName => 'Credit Management';
 
   @override
   String get addMajor => 'Add Major';
