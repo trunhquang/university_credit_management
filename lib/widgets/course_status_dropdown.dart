@@ -21,21 +21,29 @@ class CourseStatusDropdown extends StatelessWidget {
     String text;
 
     switch (status) {
-      case CourseStatus.completed:
-        color = AppColors.success;
-        text = languageManager.currentStrings.completed;
+      case CourseStatus.notStarted:
+        color = AppColors.textSecondary;
+        text = languageManager.currentStrings.notStarted;
         break;
       case CourseStatus.inProgress:
         color = AppColors.primary;
         text = languageManager.currentStrings.inProgress;
         break;
-      case CourseStatus.notStarted:
-        color = AppColors.textSecondary;
-        text = languageManager.currentStrings.notStarted;
+      case CourseStatus.completed:
+        color = AppColors.success;
+        text = languageManager.currentStrings.completed;
         break;
       case CourseStatus.failed:
         color = AppColors.error;
         text = languageManager.currentStrings.failed;
+        break;
+      case CourseStatus.registering:
+        color = AppColors.info;
+        text = languageManager.currentStrings.registering;
+        break;
+      case CourseStatus.needToRegister:
+        color = AppColors.warning;
+        text = languageManager.currentStrings.needToRegister;
         break;
     }
 

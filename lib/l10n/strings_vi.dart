@@ -378,4 +378,13 @@ class VietnameseStrings implements AppStrings {
 
   @override
   String get allStatuses => 'Tất cả trạng thái';
+
+  @override
+  String get registering => 'Đang đăng ký';
+
+  @override
+  String get needToRegister => 'Cần đăng ký';
+
+  @override
+  String get courseStatus => 'Trạng thái môn học';
 } 

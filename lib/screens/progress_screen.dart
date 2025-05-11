@@ -51,43 +51,22 @@ class _ProgressScreenState extends State<ProgressScreen> {
           .fold(0, (sum, section) => sum + section.optionalCredits);
       final totalCredits = totalRequiredCredits + totalOptionalCredits;
 
-      // Tính toán số tín chỉ đã hoàn thành và đang học
-      final completedRequiredCredits = sections
-          .expand((s) => s.allCourses)
-          .where((c) => c.status == CourseStatus.completed && c.type == CourseType.required)
-          .fold(0, (sum, course) => sum + course.credits);
+      // Lấy thông tin tiến độ từ ProgramService
+      _progress = await _programService.getProgress(totalCredits);
 
-      final completedOptionalCredits = sections
-          .expand((s) => s.allCourses)
-          .where((c) => c.status == CourseStatus.completed && c.type == CourseType.optional)
-          .fold(0, (sum, course) => sum + course.credits);
-
-      final inProgressRequiredCredits = sections
-          .expand((s) => s.allCourses)
-          .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.required)
-          .fold(0, (sum, course) => sum + course.credits);
-
-      final inProgressOptionalCredits = sections
-          .expand((s) => s.allCourses)
-          .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.optional)
-          .fold(0, (sum, course) => sum + course.credits);
-
-      final totalCompletedCredits = completedRequiredCredits + completedOptionalCredits;
-      final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
-
-      _progress = {
-        'totalCredits': totalCredits,
-        'completedCredits': totalCompletedCredits,
-        'inProgressCredits': totalInProgressCredits,
-        'remainingCredits': totalCredits - totalCompletedCredits - totalInProgressCredits,
-        'completedRequiredCredits': completedRequiredCredits,
-        'completedOptionalCredits': completedOptionalCredits,
-        'inProgressRequiredCredits': inProgressRequiredCredits,
-        'inProgressOptionalCredits': inProgressOptionalCredits,
-        'totalRequiredCredits': totalRequiredCredits,
-        'totalOptionalCredits': totalOptionalCredits,
-        'overallProgress': (totalCompletedCredits / totalCredits * 100).clamp(0, 100),
-      };
+      // _progress = {
+      //   'totalCredits': totalCredits,
+      //   'completedCredits': progress['completedCredits'],
+      //   'inProgressCredits': progress['inProgressCredits'],
+      //   'remainingCredits': totalCredits - progress['completedCredits'] - progress['inProgressCredits'],
+      //   'completedRequiredCredits': progress['completedRequiredCredits'],
+      //   'completedOptionalCredits': progress['completedOptionalCredits'],
+      //   'inProgressRequiredCredits': progress['inProgressRequiredCredits'],
+      //   'inProgressOptionalCredits': progress['inProgressOptionalCredits'],
+      //   'totalRequiredCredits': totalRequiredCredits,
+      //   'totalOptionalCredits': totalOptionalCredits,
+      //   'overallProgress': progress['percentage'],
+      // };
 
       _sections = sections;
       _overallGPA = await _courseService.calculateOverallGPA();
@@ -191,6 +170,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
               const SizedBox(height: 24),
               _buildCreditsSummary(strings),
               const SizedBox(height: 24),
+              _buildCourseStatusSummary(strings),
+              const SizedBox(height: 24),
               _buildSectionProgress(strings),
             ],
           ),
@@ -200,10 +181,10 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildOverallProgress(AppStrings strings) {
-    final percentage = _progress!['overallProgress'].toDouble() ?? 0.0;
-    final completedCredits = _progress!['completedCredits'] as int;
-    final inProgressCredits = _progress!['inProgressCredits'] as int;
-    final totalCredits = _progress!['totalCredits'] as int;
+    final percentage = _progress?['overallProgress']?.toDouble() ?? 0.0;
+    final completedCredits = _progress?['completedCredits'] as int? ?? 0;
+    final inProgressCredits = _progress?['inProgressCredits'] as int? ?? 0;
+    final totalCredits = _progress?['totalCredits'] as int? ?? 0;
 
     return Card(
       elevation: 2,
@@ -235,38 +216,45 @@ class _ProgressScreenState extends State<ProgressScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${percentage.toStringAsFixed(2)}% ${strings.completed}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: percentage == 100 ? AppColors.success : AppColors.primary,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    '${percentage.toStringAsFixed(2)}% ${strings.completed}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: percentage == 100 ? AppColors.success : AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                RichText(
-                  text: TextSpan(
-                    style: DefaultTextStyle.of(context).style.copyWith(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                    children: [
-                      TextSpan(
-                        text: '$completedCredits',
-                        style: const TextStyle(
-                          color: AppColors.success,
-                          fontWeight: FontWeight.bold,
-                        ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: RichText(
+                    text: TextSpan(
+                      style: DefaultTextStyle.of(context).style.copyWith(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
                       ),
-                      if (inProgressCredits > 0)
+                      children: [
                         TextSpan(
-                          text: ' (+$inProgressCredits)',
+                          text: '$completedCredits',
                           style: const TextStyle(
-                            color: AppColors.primary,
+                            color: AppColors.success,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      TextSpan(text: '/$totalCredits ${strings.credits}'),
-                    ],
+                        if (inProgressCredits > 0)
+                          TextSpan(
+                            text: ' (+$inProgressCredits)',
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        TextSpan(text: '/$totalCredits ${strings.credits}'),
+                      ],
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -469,6 +457,179 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
+  Widget _buildCourseStatusSummary(AppStrings strings) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              strings.courseStatus,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if ((_progress?['completedCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.success,
+                    '${strings.completed}: ${_progress?['completedCourses'] ?? 0} môn (${_progress?['completedCredits'] ?? 0} ${strings.credits})',
+                  ),
+                if ((_progress?['inProgressCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.primary,
+                    '${strings.inProgress}: ${_progress?['inProgressCourses'] ?? 0} môn (${_progress?['inProgressCredits'] ?? 0} ${strings.credits})',
+                  ),
+                if ((_progress?['registeringCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.info,
+                    '${strings.registering}: ${_progress?['registeringCourses'] ?? 0} môn (${_progress?['registeringCredits'] ?? 0} ${strings.credits})',
+                  ),
+                if ((_progress?['needToRegisterCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.warning,
+                    '${strings.needToRegister}: ${_progress?['needToRegisterCourses'] ?? 0} môn (${_progress?['needToRegisterCredits'] ?? 0} ${strings.credits})',
+                  ),
+                if ((_progress?['notStartedCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.textSecondary,
+                    '${strings.notStarted}: ${_progress?['notStartedCourses'] ?? 0} môn (${_progress?['notStartedCredits'] ?? 0} ${strings.credits})',
+                  ),
+                if ((_progress?['failedCourses'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.error,
+                    '${strings.failed}: ${_progress?['failedCourses'] ?? 0} môn (${_progress?['failedCredits'] ?? 0} ${strings.credits})',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Divider(height: 1, color: AppColors.divider),
+            const SizedBox(height: 16),
+            Text(
+              strings.requiredCredits,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if ((_progress?['completedRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.success,
+                    '${strings.completed}: ${_progress?['completedRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['inProgressRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.primary,
+                    '${strings.inProgress}: ${_progress?['inProgressRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['registeringRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.info,
+                    '${strings.registering}: ${_progress?['registeringRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['needToRegisterRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.warning,
+                    '${strings.needToRegister}: ${_progress?['needToRegisterRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['notStartedRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.textSecondary,
+                    '${strings.notStarted}: ${_progress?['notStartedRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['failedRequiredCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.error,
+                    '${strings.failed}: ${_progress?['failedRequiredCredits'] ?? 0} ${strings.credits}',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              strings.optionalCredits,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if ((_progress?['completedOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.success,
+                    '${strings.completed}: ${_progress?['completedOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['inProgressOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.primary,
+                    '${strings.inProgress}: ${_progress?['inProgressOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['registeringOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.info,
+                    '${strings.registering}: ${_progress?['registeringOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['needToRegisterOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.warning,
+                    '${strings.needToRegister}: ${_progress?['needToRegisterOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['notStartedOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.textSecondary,
+                    '${strings.notStarted}: ${_progress?['notStartedOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+                if ((_progress?['failedOptionalCredits'] ?? 0) > 0)
+                  _buildStatusChip(
+                    AppColors.error,
+                    '${strings.failed}: ${_progress?['failedOptionalCredits'] ?? 0} ${strings.credits}',
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(Color color, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSectionProgress(AppStrings strings) {
     if (_sections == null || _sections!.isEmpty) {
       return Center(
@@ -497,6 +658,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
   }
 
   Widget _buildSectionCard(Section section, AppStrings strings) {
+    // Lấy thông tin tiến độ từ ProgramService
     final completedRequiredCredits = section.allCourses
         .where((c) => c.status == CourseStatus.completed && c.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
@@ -508,6 +670,12 @@ class _ProgressScreenState extends State<ProgressScreen> {
         .fold(0, (sum, course) => sum + course.credits);
     final inProgressOptionalCredits = section.allCourses
         .where((c) => c.status == CourseStatus.inProgress && c.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+    final registeringRequiredCredits = section.allCourses
+        .where((c) => c.status == CourseStatus.registering && c.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+    final registeringOptionalCredits = section.allCourses
+        .where((c) => c.status == CourseStatus.registering && c.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
     return Card(
@@ -534,7 +702,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _buildCreditRow(
                 strings.required,
                 completedRequiredCredits,
-                inProgressRequiredCredits,
+                inProgressRequiredCredits + registeringRequiredCredits,
                 section.requiredCredits,
                 AppColors.primary,
                 strings,
@@ -544,7 +712,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               _buildCreditRow(
                 strings.optional,
                 completedOptionalCredits,
-                inProgressOptionalCredits,
+                inProgressOptionalCredits + registeringOptionalCredits,
                 section.optionalCredits,
                 AppColors.secondary,
                 strings,

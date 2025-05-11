@@ -301,10 +301,15 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         return _languageManager.currentStrings.completed;
       case CourseStatus.failed:
         return _languageManager.currentStrings.failed;
+      case CourseStatus.registering:
+        return _languageManager.currentStrings.registering;
+      case CourseStatus.needToRegister:
+        return _languageManager.currentStrings.needToRegister;
     }
   }
 
   Widget _buildSectionInfo() {
+    // Calculate credits by status and type
     final completedRequiredCredits = _section.courseGroups
         .expand((group) => group.courses)
         .where((course) =>
@@ -332,6 +337,96 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
             course.status == CourseStatus.inProgress &&
             course.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
+
+    final registeringRequiredCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.registering &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final registeringOptionalCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.registering &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterRequiredCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.needToRegister &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterOptionalCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.needToRegister &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedRequiredCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.notStarted &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedOptionalCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.notStarted &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedRequiredCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.failed &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedOptionalCredits = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) =>
+            course.status == CourseStatus.failed &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    // Calculate total credits by status
+    final totalCompletedCredits = completedRequiredCredits + completedOptionalCredits;
+    final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
+    final totalRegisteringCredits = registeringRequiredCredits + registeringOptionalCredits;
+    final totalNeedToRegisterCredits = needToRegisterRequiredCredits + needToRegisterOptionalCredits;
+    final totalNotStartedCredits = notStartedRequiredCredits + notStartedOptionalCredits;
+    final totalFailedCredits = failedRequiredCredits + failedOptionalCredits;
+
+    // Count courses by status
+    final completedCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.completed)
+        .length;
+    final inProgressCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.inProgress)
+        .length;
+    final registeringCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.registering)
+        .length;
+    final needToRegisterCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.needToRegister)
+        .length;
+    final notStartedCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.notStarted)
+        .length;
+    final failedCourses = _section.courseGroups
+        .expand((group) => group.courses)
+        .where((course) => course.status == CourseStatus.failed)
+        .length;
 
     // Check if section is completed
     final isSectionCompleted = completedRequiredCredits >= _section.requiredCredits &&
@@ -380,11 +475,50 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            // Course status summary
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (completedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.success,
+                    '${_languageManager.currentStrings.completed}: $completedCourses (${totalCompletedCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+                if (inProgressCourses > 0)
+                  _buildStatusChip(
+                    AppColors.primary,
+                    '${_languageManager.currentStrings.inProgress}: $inProgressCourses (${totalInProgressCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+                if (registeringCourses > 0)
+                  _buildStatusChip(
+                    AppColors.info,
+                    '${_languageManager.currentStrings.registering}: $registeringCourses (${totalRegisteringCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+                if (needToRegisterCourses > 0)
+                  _buildStatusChip(
+                    AppColors.warning,
+                    '${_languageManager.currentStrings.needToRegister}: $needToRegisterCourses (${totalNeedToRegisterCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+                if (notStartedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.textSecondary,
+                    '${_languageManager.currentStrings.notStarted}: $notStartedCourses (${totalNotStartedCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+                if (failedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.error,
+                    '${_languageManager.currentStrings.failed}: $failedCourses (${totalFailedCredits} ${_languageManager.currentStrings.credits})',
+                  ),
+              ],
+            ),
+            const SizedBox(height: 16),
             _buildCreditInfo(
               '${_languageManager.currentStrings.requiredCredits}:',
               _section.requiredCredits,
               completedCredits: completedRequiredCredits,
               inProgressCredits: inProgressRequiredCredits,
+              registeringCredits: registeringRequiredCredits,
               isCompleted: completedRequiredCredits >= _section.requiredCredits,
             ),
             const SizedBox(height: 4),
@@ -393,20 +527,37 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
               _section.optionalCredits,
               completedCredits: completedOptionalCredits,
               inProgressCredits: inProgressOptionalCredits,
+              registeringCredits: registeringOptionalCredits,
               isCompleted: completedOptionalCredits >= _section.optionalCredits,
             ),
             const SizedBox(height: 4),
             _buildCreditInfo(
               '${_languageManager.currentStrings.totalCredits}:',
               _section.requiredCredits + _section.optionalCredits,
-              completedCredits:
-                  completedRequiredCredits + completedOptionalCredits,
-              inProgressCredits:
-                  inProgressRequiredCredits + inProgressOptionalCredits,
+              completedCredits: totalCompletedCredits,
+              inProgressCredits: totalInProgressCredits,
+              registeringCredits: totalRegisteringCredits,
               isTotal: true,
               isCompleted: isSectionCompleted,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(Color color, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
         ),
       ),
     );
@@ -417,6 +568,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
     int credits, {
     int? completedCredits,
     int? inProgressCredits,
+    int? registeringCredits,
     bool isTotal = false,
     bool isCompleted = false,
   }) {
@@ -440,7 +592,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                 decoration: isCompleted ? TextDecoration.lineThrough : null,
               ),
             ),
-            if (inProgressCredits != null && inProgressCredits > 0) ...[
+            if (inProgressCredits != null && inProgressCredits > 0)
               Text(
                 ' (+$inProgressCredits)',
                 style: TextStyle(
@@ -448,7 +600,14 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
-            ],
+            if (registeringCredits != null && registeringCredits > 0)
+              Text(
+                ' (+$registeringCredits)',
+                style: TextStyle(
+                  color: AppColors.info,
+                  fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
             Text(
               '/$credits ${_languageManager.currentStrings.credits}',
               style: TextStyle(
@@ -478,6 +637,7 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
   Widget _buildCourseGroupCard(CourseGroup group) {
     final filteredCourses = _filterCourses(group.courses);
     
+    // Calculate credits by status and type
     final completedRequiredCredits = filteredCourses
         .where((course) =>
             course.status == CourseStatus.completed &&
@@ -502,10 +662,82 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
             course.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
-    final totalCompletedCredits =
-        completedRequiredCredits + completedOptionalCredits;
-    final totalInProgressCredits =
-        inProgressRequiredCredits + inProgressOptionalCredits;
+    final registeringRequiredCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.registering &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final registeringOptionalCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.registering &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterRequiredCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.needToRegister &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterOptionalCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.needToRegister &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedRequiredCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.notStarted &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedOptionalCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.notStarted &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedRequiredCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.failed &&
+            course.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedOptionalCredits = filteredCourses
+        .where((course) =>
+            course.status == CourseStatus.failed &&
+            course.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    // Calculate total credits by status
+    final totalCompletedCredits = completedRequiredCredits + completedOptionalCredits;
+    final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
+    final totalRegisteringCredits = registeringRequiredCredits + registeringOptionalCredits;
+    final totalNeedToRegisterCredits = needToRegisterRequiredCredits + needToRegisterOptionalCredits;
+    final totalNotStartedCredits = notStartedRequiredCredits + notStartedOptionalCredits;
+    final totalFailedCredits = failedRequiredCredits + failedOptionalCredits;
+
+    // Count courses by status
+    final completedCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.completed)
+        .length;
+    final inProgressCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.inProgress)
+        .length;
+    final registeringCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.registering)
+        .length;
+    final needToRegisterCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.needToRegister)
+        .length;
+    final notStartedCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.notStarted)
+        .length;
+    final failedCourses = filteredCourses
+        .where((course) => course.status == CourseStatus.failed)
+        .length;
+
     final totalCredits = group.requiredCredits + group.optionalCredits;
 
     // Check if group is completed
@@ -595,6 +827,44 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                // Course status summary
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (completedCourses > 0)
+                      _buildStatusChip(
+                        AppColors.success,
+                        '${_languageManager.currentStrings.completed}: $completedCourses (${totalCompletedCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                    if (inProgressCourses > 0)
+                      _buildStatusChip(
+                        AppColors.primary,
+                        '${_languageManager.currentStrings.inProgress}: $inProgressCourses (${totalInProgressCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                    if (registeringCourses > 0)
+                      _buildStatusChip(
+                        AppColors.info,
+                        '${_languageManager.currentStrings.registering}: $registeringCourses (${totalRegisteringCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                    if (needToRegisterCourses > 0)
+                      _buildStatusChip(
+                        AppColors.warning,
+                        '${_languageManager.currentStrings.needToRegister}: $needToRegisterCourses (${totalNeedToRegisterCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                    if (notStartedCourses > 0)
+                      _buildStatusChip(
+                        AppColors.textSecondary,
+                        '${_languageManager.currentStrings.notStarted}: $notStartedCourses (${totalNotStartedCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                    if (failedCourses > 0)
+                      _buildStatusChip(
+                        AppColors.error,
+                        '${_languageManager.currentStrings.failed}: $failedCourses (${totalFailedCredits} ${_languageManager.currentStrings.credits})',
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 LinearProgressIndicator(
                   value: totalCompletedCredits / totalCredits,
                   backgroundColor: AppColors.progressBackground,
@@ -635,6 +905,12 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                               style: const TextStyle(
                                   color: AppColors.progressInProgress),
                             ),
+                          if (registeringRequiredCredits > 0)
+                            TextSpan(
+                              text: ' (+$registeringRequiredCredits)',
+                              style: const TextStyle(
+                                  color: AppColors.info),
+                            ),
                           TextSpan(
                             text: '/${group.requiredCredits}',
                             style: TextStyle(
@@ -672,6 +948,12 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                               text: ' (+$inProgressOptionalCredits)',
                               style: const TextStyle(
                                   color: AppColors.progressInProgress),
+                            ),
+                          if (registeringOptionalCredits > 0)
+                            TextSpan(
+                              text: ' (+$registeringOptionalCredits)',
+                              style: const TextStyle(
+                                  color: AppColors.info),
                             ),
                           TextSpan(
                             text: '/${group.optionalCredits}',
@@ -714,6 +996,12 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
                           text: ' (+$totalInProgressCredits)',
                           style: const TextStyle(
                               color: AppColors.progressInProgress),
+                        ),
+                      if (totalRegisteringCredits > 0)
+                        TextSpan(
+                          text: ' (+$totalRegisteringCredits)',
+                          style: const TextStyle(
+                              color: AppColors.info),
                         ),
                       TextSpan(
                         text: '/$totalCredits',

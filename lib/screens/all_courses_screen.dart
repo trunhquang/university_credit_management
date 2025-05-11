@@ -241,6 +241,10 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
         return _languageManager.currentStrings.completed;
       case CourseStatus.failed:
         return _languageManager.currentStrings.failed;
+      case CourseStatus.registering:
+        return _languageManager.currentStrings.registering;
+      case CourseStatus.needToRegister:
+        return _languageManager.currentStrings.needToRegister;
     }
   }
 

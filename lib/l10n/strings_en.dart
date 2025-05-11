@@ -364,6 +364,15 @@ class EnglishStrings implements AppStrings {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get registering => 'Registering';
+
+  @override
+  String get needToRegister => 'Need to Register';
+
+  @override
+  String get courseStatus => 'Course Status';
 }
 
 class StringsEn {

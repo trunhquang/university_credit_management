@@ -875,6 +875,38 @@ class ProgramService {
             c.type == CourseType.required)
         .fold(0, (sum, course) => sum + course.credits);
 
+    final registeringRequiredCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.registering &&
+            c.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterRequiredCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.needToRegister &&
+            c.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedRequiredCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.notStarted &&
+            c.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedRequiredCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.failed &&
+            c.type == CourseType.required)
+        .fold(0, (sum, course) => sum + course.credits);
+
     // Tính toán tín chỉ tự chọn
     final completedOptionalCredits = sections
         .expand((s) => s.courseGroups)
@@ -891,6 +923,38 @@ class ProgramService {
             c.type == CourseType.optional)
         .fold(0, (sum, course) => sum + course.credits);
 
+    final registeringOptionalCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.registering &&
+            c.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final needToRegisterOptionalCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.needToRegister &&
+            c.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final notStartedOptionalCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.notStarted &&
+            c.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
+    final failedOptionalCredits = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) =>
+            c.status == CourseStatus.failed &&
+            c.type == CourseType.optional)
+        .fold(0, (sum, course) => sum + course.credits);
+
     // Tính tổng số tín chỉ yêu cầu cho mỗi loại
     final totalRequiredCredits =
         sections.fold(0, (sum, section) => sum + section.requiredCredits);
@@ -898,25 +962,89 @@ class ProgramService {
     final totalOptionalCredits =
         sections.fold(0, (sum, section) => sum + section.optionalCredits);
 
-    final completedCredits =
-        completedRequiredCredits + completedOptionalCredits;
-    final inProgressCredits =
-        inProgressRequiredCredits + inProgressOptionalCredits;
+    // Tính tổng số tín chỉ theo trạng thái
+    final totalCompletedCredits = completedRequiredCredits + completedOptionalCredits;
+    final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
+    final totalRegisteringCredits = registeringRequiredCredits + registeringOptionalCredits;
+    final totalNeedToRegisterCredits = needToRegisterRequiredCredits + needToRegisterOptionalCredits;
+    final totalNotStartedCredits = notStartedRequiredCredits + notStartedOptionalCredits;
+    final totalFailedCredits = failedRequiredCredits + failedOptionalCredits;
+
+    // Đếm số môn học theo trạng thái
+    final completedCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.completed)
+        .length;
+
+    final inProgressCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.inProgress)
+        .length;
+
+    final registeringCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.registering)
+        .length;
+
+    final needToRegisterCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.needToRegister)
+        .length;
+
+    final notStartedCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.notStarted)
+        .length;
+
+    final failedCourses = sections
+        .expand((s) => s.courseGroups)
+        .expand((g) => g.courses)
+        .where((c) => c.status == CourseStatus.failed)
+        .length;
 
     return {
       'totalCredits': totalCredits,
-      'completedCredits': completedCredits,
-      'inProgressCredits': inProgressCredits,
-      'remainingCredits': totalCredits - completedCredits,
-      'percentage': (completedCredits / totalCredits * 100).clamp(0, 100),
+      'completedCredits': totalCompletedCredits,
+      'inProgressCredits': totalInProgressCredits,
+      'remainingCredits': totalCredits - totalCompletedCredits,
+      'percentage': (totalCompletedCredits / totalCredits * 100).clamp(0, 100),
 
-      // Thêm các trường mới
+      // Tín chỉ bắt buộc
       'completedRequiredCredits': completedRequiredCredits,
-      'completedOptionalCredits': completedOptionalCredits,
       'inProgressRequiredCredits': inProgressRequiredCredits,
-      'inProgressOptionalCredits': inProgressOptionalCredits,
+      'registeringRequiredCredits': registeringRequiredCredits,
+      'needToRegisterRequiredCredits': needToRegisterRequiredCredits,
+      'notStartedRequiredCredits': notStartedRequiredCredits,
+      'failedRequiredCredits': failedRequiredCredits,
       'totalRequiredCredits': totalRequiredCredits,
+
+      // Tín chỉ tự chọn
+      'completedOptionalCredits': completedOptionalCredits,
+      'inProgressOptionalCredits': inProgressOptionalCredits,
+      'registeringOptionalCredits': registeringOptionalCredits,
+      'needToRegisterOptionalCredits': needToRegisterOptionalCredits,
+      'notStartedOptionalCredits': notStartedOptionalCredits,
+      'failedOptionalCredits': failedOptionalCredits,
       'totalOptionalCredits': totalOptionalCredits,
+
+      // Tổng số tín chỉ theo trạng thái
+      'totalRegisteringCredits': totalRegisteringCredits,
+      'totalNeedToRegisterCredits': totalNeedToRegisterCredits,
+      'totalNotStartedCredits': totalNotStartedCredits,
+      'totalFailedCredits': totalFailedCredits,
+
+      // Số môn học theo trạng thái
+      'completedCourses': completedCourses,
+      'inProgressCourses': inProgressCourses,
+      'registeringCourses': registeringCourses,
+      'needToRegisterCourses': needToRegisterCourses,
+      'notStartedCourses': notStartedCourses,
+      'failedCourses': failedCourses,
     };
   }
 

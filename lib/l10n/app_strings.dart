@@ -101,7 +101,7 @@ abstract class AppStrings {
   String get completed => 'Hoàn thành';
   String get inProgress => 'Đang học';
   String get notStarted => 'Chưa học';
-  String get failed => 'Không đạt';
+  String get failed => 'Failed';
   String get filterByStatus => 'Filter by Status';
   String get allStatuses => 'All Statuses';
 
@@ -132,4 +132,9 @@ abstract class AppStrings {
   String get filterBySection;
   String get allSections;
   String get type;
+
+  String get registering => 'Registering';
+  String get needToRegister => 'Need to Register';
+
+  String get courseStatus => 'Trạng thái môn học';
 }

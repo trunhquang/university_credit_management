@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/language_manager.dart';
+import '../theme/app_colors.dart';
 
 class ProgramOverview extends StatelessWidget {
   final Map<String, dynamic>? progress;
@@ -21,13 +22,37 @@ class ProgramOverview extends StatelessWidget {
     final totalCredits = progress?['totalCredits'] as int?;
     final completedCredits = progress?['completedCredits'] as int?;
 
-    final inProgressCredits = (progress?['inProgressCredits'] as int?) ?? 0;
+    // Get credits by status and type
     final completedRequiredCredits = (progress?['completedRequiredCredits'] as int?) ?? 0;
     final completedOptionalCredits = (progress?['completedOptionalCredits'] as int?) ?? 0;
     final inProgressRequiredCredits = (progress?['inProgressRequiredCredits'] as int?) ?? 0;
     final inProgressOptionalCredits = (progress?['inProgressOptionalCredits'] as int?) ?? 0;
+    final registeringRequiredCredits = (progress?['registeringRequiredCredits'] as int?) ?? 0;
+    final registeringOptionalCredits = (progress?['registeringOptionalCredits'] as int?) ?? 0;
+    final needToRegisterRequiredCredits = (progress?['needToRegisterRequiredCredits'] as int?) ?? 0;
+    final needToRegisterOptionalCredits = (progress?['needToRegisterOptionalCredits'] as int?) ?? 0;
+    final notStartedRequiredCredits = (progress?['notStartedRequiredCredits'] as int?) ?? 0;
+    final notStartedOptionalCredits = (progress?['notStartedOptionalCredits'] as int?) ?? 0;
+    final failedRequiredCredits = (progress?['failedRequiredCredits'] as int?) ?? 0;
+    final failedOptionalCredits = (progress?['failedOptionalCredits'] as int?) ?? 0;
+
     final totalRequiredCredits = (progress?['totalRequiredCredits'] as int?) ?? 0;
     final totalOptionalCredits = (progress?['totalOptionalCredits'] as int?) ?? 0;
+
+    // Calculate total credits by status
+    final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
+    final totalRegisteringCredits = registeringRequiredCredits + registeringOptionalCredits;
+    final totalNeedToRegisterCredits = needToRegisterRequiredCredits + needToRegisterOptionalCredits;
+    final totalNotStartedCredits = notStartedRequiredCredits + notStartedOptionalCredits;
+    final totalFailedCredits = failedRequiredCredits + failedOptionalCredits;
+
+    // Get course counts by status
+    final completedCourses = (progress?['completedCourses'] as int?) ?? 0;
+    final inProgressCourses = (progress?['inProgressCourses'] as int?) ?? 0;
+    final registeringCourses = (progress?['registeringCourses'] as int?) ?? 0;
+    final needToRegisterCourses = (progress?['needToRegisterCourses'] as int?) ?? 0;
+    final notStartedCourses = (progress?['notStartedCourses'] as int?) ?? 0;
+    final failedCourses = (progress?['failedCourses'] as int?) ?? 0;
 
     return Card(
       margin: const EdgeInsets.all(16),
@@ -60,18 +85,56 @@ class ProgramOverview extends StatelessWidget {
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: percentage / 100,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: AppColors.progressBackground,
               valueColor: AlwaysStoppedAnimation<Color>(
-                percentage >= 100 ? Colors.green : Colors.blue,
+                percentage >= 100 ? AppColors.success : AppColors.progressValue,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               '${languageManager.currentStrings.completionProgress}: ${percentage.toStringAsFixed(1)}%',
               style: TextStyle(
-                color: percentage >= 100 ? Colors.green : Colors.blue,
+                color: percentage >= 100 ? AppColors.success : AppColors.progressValue,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+            const SizedBox(height: 16),
+            // Course status summary
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (completedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.success,
+                    '${languageManager.currentStrings.completed}: $completedCourses (${completedCredits ?? 0} ${languageManager.currentStrings.credits})',
+                  ),
+                if (inProgressCourses > 0)
+                  _buildStatusChip(
+                    AppColors.primary,
+                    '${languageManager.currentStrings.inProgress}: $inProgressCourses ($totalInProgressCredits ${languageManager.currentStrings.credits})',
+                  ),
+                if (registeringCourses > 0)
+                  _buildStatusChip(
+                    AppColors.info,
+                    '${languageManager.currentStrings.registering}: $registeringCourses ($totalRegisteringCredits ${languageManager.currentStrings.credits})',
+                  ),
+                if (needToRegisterCourses > 0)
+                  _buildStatusChip(
+                    AppColors.warning,
+                    '${languageManager.currentStrings.needToRegister}: $needToRegisterCourses ($totalNeedToRegisterCredits ${languageManager.currentStrings.credits})',
+                  ),
+                if (notStartedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.textSecondary,
+                    '${languageManager.currentStrings.notStarted}: $notStartedCourses ($totalNotStartedCredits ${languageManager.currentStrings.credits})',
+                  ),
+                if (failedCourses > 0)
+                  _buildStatusChip(
+                    AppColors.error,
+                    '${languageManager.currentStrings.failed}: $failedCourses ($totalFailedCredits ${languageManager.currentStrings.credits})',
+                  ),
+              ],
             ),
             const SizedBox(height: 16),
             _buildSectionTitle(languageManager.currentStrings.credits),
@@ -83,6 +146,7 @@ class ProgramOverview extends StatelessWidget {
                 totalRequiredCredits,
                 completedRequiredCredits,
                 inProgressRequiredCredits,
+                registeringRequiredCredits,
               ),
               const SizedBox(height: 8),
             ],
@@ -93,6 +157,7 @@ class ProgramOverview extends StatelessWidget {
                 totalOptionalCredits,
                 completedOptionalCredits,
                 inProgressOptionalCredits,
+                registeringOptionalCredits,
               ),
               const SizedBox(height: 8),
             ],
@@ -101,7 +166,8 @@ class ProgramOverview extends StatelessWidget {
               languageManager.currentStrings.totalCredits,
               totalCredits ?? 0,
               completedCredits ?? 0,
-              inProgressCredits,
+              totalInProgressCredits,
+              totalRegisteringCredits,
               isTotal: true,
             ),
             const SizedBox(height: 16),
@@ -121,7 +187,7 @@ class ProgramOverview extends StatelessWidget {
           width: 4,
           height: 16,
           decoration: BoxDecoration(
-            color: Colors.blue,
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
@@ -142,7 +208,8 @@ class ProgramOverview extends StatelessWidget {
     String label,
     int totalCredits,
     int completedCredits,
-    int inProgressCredits, {
+    int inProgressCredits,
+    int registeringCredits, {
     bool isTotal = false,
   }) {
     final languageManager = Provider.of<LanguageManager>(context);
@@ -160,7 +227,7 @@ class ProgramOverview extends StatelessWidget {
               TextSpan(
                 text: '$completedCredits',
                 style: TextStyle(
-                  color: Colors.green,
+                  color: AppColors.success,
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -168,7 +235,15 @@ class ProgramOverview extends StatelessWidget {
                 TextSpan(
                   text: ' (+$inProgressCredits)',
                   style: TextStyle(
-                    color: Colors.blue,
+                    color: AppColors.progressInProgress,
+                    fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              if (registeringCredits > 0)
+                TextSpan(
+                  text: ' (+$registeringCredits)',
+                  style: TextStyle(
+                    color: AppColors.info,
                     fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
@@ -176,13 +251,30 @@ class ProgramOverview extends StatelessWidget {
                 text: '/$totalCredits ${languageManager.currentStrings.credits}',
                 style: TextStyle(
                   fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-                  color: isTotal ? Colors.blue : null,
+                  color: isTotal ? AppColors.primary : null,
                 ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildStatusChip(Color color, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          color: color,
+        ),
+      ),
     );
   }
 
@@ -201,7 +293,7 @@ class ProgramOverview extends StatelessWidget {
             Text('${languageManager.currentStrings.certificateType}: $certType'),
             Icon(
               isPassed ? Icons.check_circle : Icons.warning,
-              color: isPassed ? Colors.green : Colors.orange,
+              color: isPassed ? AppColors.success : AppColors.warning,
               size: 16,
             ),
           ],
@@ -227,8 +319,8 @@ class ProgramOverview extends StatelessWidget {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: currentScore == null 
-                    ? Colors.grey 
-                    : (isPassed ? Colors.green : Colors.red),
+                    ? AppColors.textSecondary
+                    : (isPassed ? AppColors.success : AppColors.error),
               ),
             ),
           ],

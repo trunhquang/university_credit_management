@@ -10,6 +10,8 @@ enum CourseStatus {
   inProgress,
   completed,
   failed,
+  registering,    // Đang đăng ký
+  needToRegister, // Cần đăng ký
 }
 
 //Môn học
