@@ -79,35 +79,49 @@ class CourseStatusDropdown extends StatelessWidget {
     return IconButton(
       icon: _buildCourseStatusChip(course.status),
       onPressed: () {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Cập nhật trạng thái'),
-            content: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ...CourseStatus.values.asMap().entries.map((entry) {
-                        return InkWell(
-                            onTap: () {
-                              onChangeCourseStatus(entry.value);
-                              Navigator.pop(context);
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: _buildCourseStatusChip(entry.value),
-                            ));
-                      }).toList(),
-                    ],
+        if ([
+          CourseStatus.inProgress,
+          CourseStatus.completed,
+          CourseStatus.failed,
+          CourseStatus.registering
+        ].contains(course.status)) {
+          var list = [
+            CourseStatus.inProgress,
+            CourseStatus.completed,
+            CourseStatus.failed
+          ];
+          list.remove(course.status);
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Cập nhật trạng thái'),
+              content: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // ...CourseStatus.values.
+                        ...list.asMap().entries.map((entry) {
+                          return InkWell(
+                              onTap: () {
+                                onChangeCourseStatus(entry.value);
+                                Navigator.pop(context);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 4),
+                                child: _buildCourseStatusChip(entry.value),
+                              ));
+                        }).toList(),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
+          );
+        }
       },
       color: Colors.white,
     );
