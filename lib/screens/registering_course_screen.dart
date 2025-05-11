@@ -55,7 +55,6 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
   List<Course> _allCourses = [];
-  List<Course> _selectedCourses = [];
   CourseFilter _filter = CourseFilter.all;
   Set<String> _expandedGroups = {};
 
@@ -164,76 +163,6 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
     return null;
   }
 
-  void _toggleCourseSelection(Course course) {
-    setState(() {
-      if (_selectedCourses.contains(course)) {
-        _selectedCourses.remove(course);
-      } else {
-        _selectedCourses.add(course);
-      }
-    });
-  }
-
-  Future<void> _registerSelectedCourses() async {
-    if (_selectedCourses.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text(_languageManager.currentStrings.pleaseSelectCourses)),
-      );
-      return;
-    }
-
-    try {
-      // Cập nhật trạng thái các môn học thành registering
-      for (final course in _selectedCourses) {
-        final updatedCourse = course.copyWith(status: CourseStatus.registering);
-
-        // Tìm section và group chứa môn học
-        if (_sections != null) {
-          for (final section in _sections!) {
-            for (final group in section.courseGroups) {
-              final index = group.courses.indexWhere((c) => c.id == course.id);
-              if (index != -1) {
-                // Cập nhật trong danh sách sections
-                group.courses[index] = updatedCourse;
-
-                // Cập nhật vào database
-                await _programService.updateCourse(
-                    section.id, group.id, updatedCourse);
-                break;
-              }
-            }
-          }
-        }
-      }
-
-      // Cập nhật UI
-      setState(() {
-        _updateCourses();
-        _selectedCourses.clear();
-      });
-
-      // Hiển thị thông báo thành công
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_languageManager.currentStrings.coursesRegistered),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Lỗi: ${e.toString()}'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    }
-  }
-
   Future<void> _toggleCourseOpenStatus(Course course) async {
     try {
       // Tạo bản sao mới của môn học với trạng thái isOpen ngược lại
@@ -280,6 +209,63 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
           SnackBar(
             content: Text('Lỗi: ${e.toString()}'),
             backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _toggleCourseRegistration(Course course) async {
+    try {
+      // Tạo bản sao mới của môn học với trạng thái mới
+      final updatedCourse = course.copyWith(
+        status: course.status == CourseStatus.registering
+            ? CourseStatus.notStarted
+            : CourseStatus.registering,
+      );
+
+      // Tìm section và group chứa môn học
+      if (_sections != null) {
+        for (final section in _sections!) {
+          for (final group in section.courseGroups) {
+            final index = group.courses.indexWhere((c) => c.id == course.id);
+            if (index != -1) {
+              // Cập nhật trong danh sách sections
+              group.courses[index] = updatedCourse;
+
+              // Cập nhật vào database
+              await _programService.updateCourse(
+                  section.id, group.id, updatedCourse);
+
+              // Cập nhật UI
+              setState(() {
+                _updateCourses();
+              });
+
+              // Hiển thị thông báo
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(updatedCourse.status == CourseStatus.registering
+                        ? 'Đã đăng ký môn học ${course.name}'
+                        : 'Đã hủy đăng ký môn học ${course.name}'),
+                    backgroundColor: updatedCourse.status == CourseStatus.registering
+                        ? AppColors.success
+                        : AppColors.error,
+                  ),
+                );
+              }
+              return;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Lỗi: ${e.toString()}'),
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -430,11 +416,6 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
                             courses: _allCourses,
                             languageManager: _languageManager,
                           ),
-                          const SizedBox(height: 8),
-                          SelectedCoursesSummary(
-                            selectedCourses: _selectedCourses,
-                            languageManager: _languageManager,
-                          ),
                         ],
                       ),
                     ),
@@ -453,31 +434,12 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
                             isExpanded: isExpanded,
                             courses: courses,
                             languageManager: _languageManager,
-                            onToggleSelection: _toggleCourseSelection,
                             onToggleOpenStatus: _toggleCourseOpenStatus,
-                            selectedCourses: _selectedCourses,
+                            onToggleRegistration: _toggleCourseRegistration,
                           );
                         },
                       ),
                     ),
-                    if (_selectedCourses.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ElevatedButton(
-                          onPressed: _registerSelectedCourses,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            minimumSize: const Size(double.infinity, 48),
-                          ),
-                          child: Text(
-                            '${_languageManager.currentStrings.register} (${_selectedCourses.length})',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
                   ],
                 ),
     );

@@ -10,9 +10,8 @@ class RegisterCourseGroupCard extends StatelessWidget {
   final List<Course> courses;
   final bool isExpanded;
   final Function(String) toggleGroupExpansion;
-  final Function(Course) onToggleSelection;
   final Function(Course) onToggleOpenStatus;
-  final List<Course> selectedCourses;
+  final Function(Course) onToggleRegistration;
   final LanguageManager languageManager;
 
   const RegisterCourseGroupCard({
@@ -21,54 +20,61 @@ class RegisterCourseGroupCard extends StatelessWidget {
     required this.courses,
     required this.isExpanded,
     required this.toggleGroupExpansion,
-    required this.onToggleSelection,
     required this.onToggleOpenStatus,
-    required this.selectedCourses,
+    required this.onToggleRegistration,
     required this.languageManager,
   });
 
   bool get _isGroupCreditMet {
     // Tính tổng số tín chỉ bắt buộc đã hoàn thành, đang học hoặc đang đăng ký
-    final completedRequiredCredits = group.courses.where((c) => 
-      c.type == CourseType.required && [
-        CourseStatus.completed,
-        CourseStatus.inProgress,
-        CourseStatus.registering,
-      ].contains(c.status)
-    ).fold(0, (sum, c) => sum + c.credits);
+    final completedRequiredCredits = group.courses
+        .where((c) =>
+            c.type == CourseType.required &&
+            [
+              CourseStatus.completed,
+              CourseStatus.inProgress,
+              CourseStatus.registering,
+            ].contains(c.status))
+        .fold(0, (sum, c) => sum + c.credits);
 
     // Tính tổng số tín chỉ tự chọn đã hoàn thành, đang học hoặc đang đăng ký
-    final completedOptionalCredits = group.courses.where((c) => 
-      c.type == CourseType.optional && [
-        CourseStatus.completed,
-        CourseStatus.inProgress,
-        CourseStatus.registering,
-      ].contains(c.status)
-    ).fold(0, (sum, c) => sum + c.credits);
+    final completedOptionalCredits = group.courses
+        .where((c) =>
+            c.type == CourseType.optional &&
+            [
+              CourseStatus.completed,
+              CourseStatus.inProgress,
+              CourseStatus.registering,
+            ].contains(c.status))
+        .fold(0, (sum, c) => sum + c.credits);
 
     // Kiểm tra xem đã đủ cả số tín chỉ bắt buộc và tự chọn chưa
-    return completedRequiredCredits >= group.requiredCredits && 
-           completedOptionalCredits >= group.optionalCredits;
+    return completedRequiredCredits >= group.requiredCredits &&
+        completedOptionalCredits >= group.optionalCredits;
   }
 
   int get _completedRequiredCredits {
-    return group.courses.where((c) => 
-      c.type == CourseType.required && [
-        CourseStatus.completed,
-        CourseStatus.inProgress,
-        CourseStatus.registering,
-      ].contains(c.status)
-    ).fold(0, (sum, c) => sum + c.credits);
+    return group.courses
+        .where((c) =>
+            c.type == CourseType.required &&
+            [
+              CourseStatus.completed,
+              CourseStatus.inProgress,
+              CourseStatus.registering,
+            ].contains(c.status))
+        .fold(0, (sum, c) => sum + c.credits);
   }
 
   int get _completedOptionalCredits {
-    return group.courses.where((c) => 
-      c.type == CourseType.optional && [
-        CourseStatus.completed,
-        CourseStatus.inProgress,
-        CourseStatus.registering,
-      ].contains(c.status)
-    ).fold(0, (sum, c) => sum + c.credits);
+    return group.courses
+        .where((c) =>
+            c.type == CourseType.optional &&
+            [
+              CourseStatus.completed,
+              CourseStatus.inProgress,
+              CourseStatus.registering,
+            ].contains(c.status))
+        .fold(0, (sum, c) => sum + c.credits);
   }
 
   @override
@@ -105,13 +111,16 @@ class RegisterCourseGroupCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            decoration: _isGroupCreditMet ? TextDecoration.lineThrough : null,
+                            decoration: _isGroupCreditMet
+                                ? TextDecoration.lineThrough
+                                : null,
                           ),
                         ),
                       ),
                       if (_isGroupCreditMet)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
                           decoration: BoxDecoration(
                             color: AppColors.success.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(4),
@@ -155,14 +164,16 @@ class RegisterCourseGroupCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             LinearProgressIndicator(
-                              value: group.requiredCredits > 0 
-                                ? _completedRequiredCredits / group.requiredCredits 
-                                : 1.0,
+                              value: group.requiredCredits > 0
+                                  ? _completedRequiredCredits /
+                                      group.requiredCredits
+                                  : 1.0,
                               backgroundColor: AppColors.outlineVariant,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                _completedRequiredCredits >= group.requiredCredits 
-                                  ? AppColors.success 
-                                  : AppColors.primary,
+                                _completedRequiredCredits >=
+                                        group.requiredCredits
+                                    ? AppColors.success
+                                    : AppColors.primary,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -170,9 +181,10 @@ class RegisterCourseGroupCard extends StatelessWidget {
                               '$_completedRequiredCredits/${group.requiredCredits}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: _completedRequiredCredits >= group.requiredCredits 
-                                  ? AppColors.success 
-                                  : AppColors.textSecondary,
+                                color: _completedRequiredCredits >=
+                                        group.requiredCredits
+                                    ? AppColors.success
+                                    : AppColors.textSecondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -193,14 +205,16 @@ class RegisterCourseGroupCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             LinearProgressIndicator(
-                              value: group.optionalCredits > 0 
-                                ? _completedOptionalCredits / group.optionalCredits 
-                                : 1.0,
-                              backgroundColor: AppColors.background,
+                              value: group.optionalCredits > 0
+                                  ? _completedOptionalCredits /
+                                      group.optionalCredits
+                                  : 1.0,
+                              backgroundColor: AppColors.outlineVariant,
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                _completedOptionalCredits >= group.optionalCredits 
-                                  ? AppColors.success 
-                                  : AppColors.primary,
+                                _completedOptionalCredits >=
+                                        group.optionalCredits
+                                    ? AppColors.success
+                                    : AppColors.primary,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -208,9 +222,10 @@ class RegisterCourseGroupCard extends StatelessWidget {
                               '$_completedOptionalCredits/${group.optionalCredits}',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: _completedOptionalCredits >= group.optionalCredits 
-                                  ? AppColors.success 
-                                  : AppColors.textSecondary,
+                                color: _completedOptionalCredits >=
+                                        group.optionalCredits
+                                    ? AppColors.success
+                                    : AppColors.textSecondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -226,16 +241,16 @@ class RegisterCourseGroupCard extends StatelessWidget {
           if (isExpanded) ...[
             const Divider(height: 1),
             ...courses.map((course) => RegisteringCourseCard(
-              course: course,
-              group: group,
-              isSelected: selectedCourses.contains(course),
-              onToggleSelection: _isGroupCreditMet ? null : onToggleSelection,
-              onToggleOpenStatus: onToggleOpenStatus,
-              languageManager: languageManager,
-            )),
+                  course: course,
+                  group: group,
+                  onToggleOpenStatus: onToggleOpenStatus,
+                  onToggleRegistration: onToggleRegistration,
+                  languageManager: languageManager,
+                  isGroupCreditMet: _isGroupCreditMet,
+                )),
           ],
         ],
       ),
     );
   }
-} 
+}

@@ -44,7 +44,7 @@ class VietnameseStrings implements AppStrings {
   String get subsectionName => 'Tên mục';
 
   @override
-  String get credits => 'Số tín chỉ';
+  String get credits => 'Tín chỉ';
 
   @override
   String get totalCredits => 'Tổng số tín chỉ';
