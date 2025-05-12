@@ -1,11 +1,11 @@
 {
-    "name": "university_credit_manager",
-    "short_name": "university_credit_manager",
+    "name": "University Credit Management",
+    "short_name": "Credit Management",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A system for managing university credits and course registration",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
