@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../models/progress_model.dart';
 import '../services/app_update_service.dart';
 import '../widgets/program_overview.dart';
 import '../services/program_service.dart';
@@ -25,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final AdManager _adManager = AdManager();
   late final LanguageManager _languageManager;
 
-  Map<String, dynamic>? progress;
+  ProgressModel? progress;
   double gpa = 0.0;
   bool isLoading = false;
   String errorMessage = '';
@@ -291,6 +292,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               _buildNavigationCard(
                 context,
+                _languageManager.currentStrings.registering,
+                Icons.app_registration,
+                '/registering',
+                AppColors.info,
+              ),
+              _buildNavigationCard(
+                context,
                 _languageManager.currentStrings.progress,
                 Icons.timeline,
                 '/progress',
@@ -302,13 +310,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icons.settings,
                 '/settings',
                 AppColors.settings,
-              ),
-              _buildNavigationCard(
-                context,
-                _languageManager.currentStrings.registering,
-                Icons.app_registration,
-                '/registering',
-                AppColors.info,
               ),
               // _buildSupportCard(),
             ],

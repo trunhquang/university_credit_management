@@ -8,7 +8,9 @@ import '../l10n/language_manager.dart';
 import '../widgets/course_card.dart';
 
 class AllCoursesScreen extends StatefulWidget {
-  const AllCoursesScreen({super.key});
+  const AllCoursesScreen({super.key, this.courseStatus});
+
+  final CourseStatus? courseStatus;
 
   @override
   State<AllCoursesScreen> createState() => _AllCoursesScreenState();
@@ -34,6 +36,7 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
     super.initState();
     _languageManager = Provider.of<LanguageManager>(context, listen: false);
     _languageManager.addListener(_onLanguageChanged);
+    _selectedStatus = widget.courseStatus;
     _loadData();
   }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/course.dart';
+import '../models/progress_model.dart';
 import '../models/section.dart';
 import '../models/settings.dart';
 import '../models/course_group.dart';
@@ -856,7 +857,7 @@ class ProgramService {
     return (completedCredits / totalCredits) * 100;
   }
 
-  Future<Map<String, dynamic>> getProgress(int totalCredits) async {
+  Future<ProgressModel> getProgress(int totalCredits) async {
     final sections = await getSections();
 
     // Tính toán tín chỉ bắt buộc
@@ -1007,45 +1008,41 @@ class ProgramService {
         .where((c) => c.status == CourseStatus.failed)
         .length;
 
-    return {
-      'totalCredits': totalCredits,
-      'completedCredits': totalCompletedCredits,
-      'inProgressCredits': totalInProgressCredits,
-      'remainingCredits': totalCredits - totalCompletedCredits,
-      'percentage': (totalCompletedCredits / totalCredits * 100).clamp(0, 100),
-
+    return ProgressModel(
+      totalCredits: totalCredits,
+      completedCredits: totalCompletedCredits,
+      inProgressCredits: totalInProgressCredits,
+      remainingCredits: totalCredits - totalCompletedCredits,
+      percentage: (totalCompletedCredits / totalCredits * 100).clamp(0, 100),
       // Tín chỉ bắt buộc
-      'completedRequiredCredits': completedRequiredCredits,
-      'inProgressRequiredCredits': inProgressRequiredCredits,
-      'registeringRequiredCredits': registeringRequiredCredits,
-      'needToRegisterRequiredCredits': needToRegisterRequiredCredits,
-      'notStartedRequiredCredits': notStartedRequiredCredits,
-      'failedRequiredCredits': failedRequiredCredits,
-      'totalRequiredCredits': totalRequiredCredits,
-
+      completedRequiredCredits: completedRequiredCredits,
+      inProgressRequiredCredits: inProgressRequiredCredits,
+      registeringRequiredCredits: registeringRequiredCredits,
+      needToRegisterRequiredCredits: needToRegisterRequiredCredits,
+      notStartedRequiredCredits: notStartedRequiredCredits,
+      failedRequiredCredits: failedRequiredCredits,
+      totalRequiredCredits: totalRequiredCredits,
       // Tín chỉ tự chọn
-      'completedOptionalCredits': completedOptionalCredits,
-      'inProgressOptionalCredits': inProgressOptionalCredits,
-      'registeringOptionalCredits': registeringOptionalCredits,
-      'needToRegisterOptionalCredits': needToRegisterOptionalCredits,
-      'notStartedOptionalCredits': notStartedOptionalCredits,
-      'failedOptionalCredits': failedOptionalCredits,
-      'totalOptionalCredits': totalOptionalCredits,
-
+      completedOptionalCredits: completedOptionalCredits,
+      inProgressOptionalCredits: inProgressOptionalCredits,
+      registeringOptionalCredits: registeringOptionalCredits,
+      needToRegisterOptionalCredits: needToRegisterOptionalCredits,
+      notStartedOptionalCredits: notStartedOptionalCredits,
+      failedOptionalCredits: failedOptionalCredits,
+      totalOptionalCredits: totalOptionalCredits,
       // Tổng số tín chỉ theo trạng thái
-      'totalRegisteringCredits': totalRegisteringCredits,
-      'totalNeedToRegisterCredits': totalNeedToRegisterCredits,
-      'totalNotStartedCredits': totalNotStartedCredits,
-      'totalFailedCredits': totalFailedCredits,
-
+      totalRegisteringCredits: totalRegisteringCredits,
+      totalNeedToRegisterCredits: totalNeedToRegisterCredits,
+      totalNotStartedCredits: totalNotStartedCredits,
+      totalFailedCredits: totalFailedCredits,
       // Số môn học theo trạng thái
-      'completedCourses': completedCourses,
-      'inProgressCourses': inProgressCourses,
-      'registeringCourses': registeringCourses,
-      'needToRegisterCourses': needToRegisterCourses,
-      'notStartedCourses': notStartedCourses,
-      'failedCourses': failedCourses,
-    };
+      completedCourses: completedCourses,
+      inProgressCourses: inProgressCourses,
+      registeringCourses: registeringCourses,
+      needToRegisterCourses: needToRegisterCourses,
+      notStartedCourses: notStartedCourses,
+      failedCourses: failedCourses,
+    );
   }
 
   Future<Map<String, dynamic>> getMissingRequiredCredits() async {

@@ -8,7 +8,7 @@ import '../l10n/language_manager.dart';
 import '../theme/app_colors.dart';
 import '../widgets/register_course_group_card.dart';
 import '../widgets/registering_courses_summary.dart';
-import '../widgets/selected_courses_summary.dart';
+import '../screens/all_courses_screen.dart';
 
 enum CourseFilter {
   all,
@@ -125,13 +125,22 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
       }).toList();
     }
 
-    // Cập nhật danh sách môn học và mở rộng tất cả các group
+    // Lưu lại các group ID hiện tại đang mở
+    final currentExpandedGroups = Set<String>.from(_expandedGroups);
+
+    // Cập nhật danh sách môn học
     setState(() {
       _allCourses = courses;
-      // Lấy tất cả các group ID và thêm vào _expandedGroups
-      _expandedGroups = _sections!
+      
+      // Lấy danh sách các group ID mới
+      final newGroupIds = _sections!
           .expand((section) => section.courseGroups)
           .map((group) => group.id)
+          .toSet();
+
+      // Giữ lại trạng thái mở của các group cũ nếu group đó vẫn còn tồn tại
+      _expandedGroups = currentExpandedGroups
+          .where((groupId) => newGroupIds.contains(groupId))
           .toSet();
     });
   }
@@ -282,6 +291,16 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
     });
   }
 
+  void _navigateToRegisteringCourses() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AllCoursesScreen(
+          courseStatus: CourseStatus.registering,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedCourses = _groupCoursesByGroup();
@@ -412,9 +431,12 @@ class _RegisteringCourseScreenState extends State<RegisteringCourseScreen> {
                             },
                           ),
                           const SizedBox(height: 8),
-                          RegisteringCoursesSummary(
-                            courses: _allCourses,
-                            languageManager: _languageManager,
+                          GestureDetector(
+                            onTap: _navigateToRegisteringCourses,
+                            child: RegisteringCoursesSummary(
+                              courses: _allCourses,
+                              languageManager: _languageManager,
+                            ),
                           ),
                         ],
                       ),

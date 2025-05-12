@@ -148,22 +148,6 @@ class _CourseListScreenState extends State<CourseListScreen> {
                         child: Text(text),
                       );
                     })
-                    // DropdownMenuItem(
-                    //   value: CourseStatus.notStarted,
-                    //   child: Text(_languageManager.currentStrings.notStarted),
-                    // ),
-                    // DropdownMenuItem(
-                    //   value: CourseStatus.inProgress,
-                    //   child: Text(_languageManager.currentStrings.inProgress),
-                    // ),
-                    // DropdownMenuItem(
-                    //   value: CourseStatus.completed,
-                    //   child: Text(_languageManager.currentStrings.completed),
-                    // ),
-                    // DropdownMenuItem(
-                    //   value: CourseStatus.failed,
-                    //   child: Text(_languageManager.currentStrings.failed),
-                    // ),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -572,50 +556,179 @@ class _CourseListScreenState extends State<CourseListScreen> {
           ),
           const SizedBox(height: 16),
           ..._courseGroup.courses.map((course) {
-            return Dismissible(
-              key: Key(course.id),
-              direction: DismissDirection.endToStart,
-              background: Container(
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 16),
-                color: AppColors.error,
-                child: const Icon(
-                  Icons.delete,
-                  color: Colors.white,
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                course.name,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                course.id,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        PopupMenuButton<String>(
+                          icon: const Icon(Icons.more_vert),
+                          onSelected: (value) async {
+                            switch (value) {
+                              case 'edit':
+                                await _showAddEditCourseDialog(course);
+                                break;
+                              case 'delete':
+                                final shouldDelete = await _showDeleteCourseConfirmation(course);
+                                if (shouldDelete == true) {
+                                  setState(() {
+                                    _courseGroup.courses.removeWhere((c) => c.id == course.id);
+                                  });
+                                  await _programService.deleteCourse(
+                                      _section.id, _courseGroup.id, course.id);
+                                  _refreshData();
+                                }
+                                break;
+                            }
+                          },
+                          itemBuilder: (BuildContext context) => [
+                            PopupMenuItem<String>(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.edit, color: AppColors.primary),
+                                  const SizedBox(width: 8),
+                                  Text(_languageManager.currentStrings.edit),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.delete, color: AppColors.error),
+                                  const SizedBox(width: 8),
+                                  Text(_languageManager.currentStrings.delete),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: course.type == CourseType.required
+                                ? AppColors.primary.withOpacity(0.1)
+                                : AppColors.success.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            course.type == CourseType.required
+                                ? _languageManager.currentStrings.required
+                                : _languageManager.currentStrings.optional,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: course.type == CourseType.required
+                                  ? AppColors.primary
+                                  : AppColors.success,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor(course.status).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            _getStatusText(course.status),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _getStatusColor(course.status),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.info.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            '${course.credits} ${_languageManager.currentStrings.credits}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: AppColors.info,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-              confirmDismiss: (direction) async {
-                final result = await _showDeleteCourseConfirmation(course);
-                return result ?? false;
-              },
-              onDismissed: (direction) async {
-                // Item will be removed from the list immediately
-                setState(() {
-                  _courseGroup.courses.removeWhere((c) => c.id == course.id);
-                });
-                // Then update the backend
-                await _programService.deleteCourse(
-                    _section.id, _courseGroup.id, course.id);
-                // Refresh data to ensure consistency
-                _refreshData();
-              },
-              child: GestureDetector(
-                  onTap: () => _showAddEditCourseDialog(course),
-                  child: CourseCard(
-                    course: course,
-                    languageManager: _languageManager,
-                    onChangeCourseStatus: (status) {
-                      _saveCourseGroup(course: course, status: status);
-                    },
-                    onScoreChanged: (score) {
-                      _saveCourseGroup(course: course, score: score);
-                    },
-                  )),
             );
           }).toList(),
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(CourseStatus status) {
+    switch (status) {
+      case CourseStatus.completed:
+        return AppColors.success;
+      case CourseStatus.inProgress:
+        return AppColors.primary;
+      case CourseStatus.notStarted:
+        return AppColors.textSecondary;
+      case CourseStatus.failed:
+        return AppColors.error;
+      case CourseStatus.registering:
+        return AppColors.info;
+      case CourseStatus.needToRegister:
+        return AppColors.warning;
+    }
+  }
+
+  String _getStatusText(CourseStatus status) {
+    switch (status) {
+      case CourseStatus.completed:
+        return _languageManager.currentStrings.completed;
+      case CourseStatus.inProgress:
+        return _languageManager.currentStrings.inProgress;
+      case CourseStatus.notStarted:
+        return _languageManager.currentStrings.notStarted;
+      case CourseStatus.failed:
+        return _languageManager.currentStrings.failed;
+      case CourseStatus.registering:
+        return _languageManager.currentStrings.registering;
+      case CourseStatus.needToRegister:
+        return _languageManager.currentStrings.needToRegister;
+    }
   }
 
   void _saveCourseGroup(

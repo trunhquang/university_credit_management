@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/language_manager.dart';
+import '../models/progress_model.dart';
 import '../theme/app_colors.dart';
 
 class ProgramOverview extends StatelessWidget {
-  final Map<String, dynamic>? progress;
+  final ProgressModel? progress;
   final double gpa;
   final Map<String, dynamic>? englishCert;
 
@@ -18,26 +19,25 @@ class ProgramOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final languageManager = Provider.of<LanguageManager>(context);
-    final percentage = (progress?['percentage'] as num?)?.toDouble() ?? 0;
-    final totalCredits = progress?['totalCredits'] as int?;
-    final completedCredits = progress?['completedCredits'] as int?;
+    final percentage = progress?.percentage ?? 0;
+    final totalCredits = progress?.totalCredits ?? 0;
+    final completedCredits = progress?.completedCredits ?? 0;
 
     // Get credits by status and type
-    final completedRequiredCredits = (progress?['completedRequiredCredits'] as int?) ?? 0;
-    final completedOptionalCredits = (progress?['completedOptionalCredits'] as int?) ?? 0;
-    final inProgressRequiredCredits = (progress?['inProgressRequiredCredits'] as int?) ?? 0;
-    final inProgressOptionalCredits = (progress?['inProgressOptionalCredits'] as int?) ?? 0;
-    final registeringRequiredCredits = (progress?['registeringRequiredCredits'] as int?) ?? 0;
-    final registeringOptionalCredits = (progress?['registeringOptionalCredits'] as int?) ?? 0;
-    final needToRegisterRequiredCredits = (progress?['needToRegisterRequiredCredits'] as int?) ?? 0;
-    final needToRegisterOptionalCredits = (progress?['needToRegisterOptionalCredits'] as int?) ?? 0;
-    final notStartedRequiredCredits = (progress?['notStartedRequiredCredits'] as int?) ?? 0;
-    final notStartedOptionalCredits = (progress?['notStartedOptionalCredits'] as int?) ?? 0;
-    final failedRequiredCredits = (progress?['failedRequiredCredits'] as int?) ?? 0;
-    final failedOptionalCredits = (progress?['failedOptionalCredits'] as int?) ?? 0;
-
-    final totalRequiredCredits = (progress?['totalRequiredCredits'] as int?) ?? 0;
-    final totalOptionalCredits = (progress?['totalOptionalCredits'] as int?) ?? 0;
+    final completedRequiredCredits = progress?.completedRequiredCredits ?? 0;
+    final completedOptionalCredits = progress?.completedOptionalCredits ?? 0;
+    final inProgressRequiredCredits = progress?.inProgressRequiredCredits ?? 0;
+    final inProgressOptionalCredits = progress?.inProgressOptionalCredits ?? 0;
+    final registeringRequiredCredits = progress?.registeringRequiredCredits ?? 0;
+    final registeringOptionalCredits = progress?.registeringOptionalCredits ?? 0;
+    final needToRegisterRequiredCredits = progress?.needToRegisterRequiredCredits ?? 0;
+    final needToRegisterOptionalCredits = progress?.needToRegisterOptionalCredits ?? 0;
+    final notStartedRequiredCredits = progress?.notStartedRequiredCredits ?? 0;
+    final notStartedOptionalCredits = progress?.notStartedOptionalCredits ?? 0;
+    final failedRequiredCredits = progress?.failedRequiredCredits ?? 0;
+    final failedOptionalCredits = progress?.failedOptionalCredits ?? 0;
+    final totalRequiredCredits = progress?.totalRequiredCredits ?? 0;
+    final totalOptionalCredits = progress?.totalOptionalCredits ?? 0;
 
     // Calculate total credits by status
     final totalInProgressCredits = inProgressRequiredCredits + inProgressOptionalCredits;
@@ -47,12 +47,12 @@ class ProgramOverview extends StatelessWidget {
     final totalFailedCredits = failedRequiredCredits + failedOptionalCredits;
 
     // Get course counts by status
-    final completedCourses = (progress?['completedCourses'] as int?) ?? 0;
-    final inProgressCourses = (progress?['inProgressCourses'] as int?) ?? 0;
-    final registeringCourses = (progress?['registeringCourses'] as int?) ?? 0;
-    final needToRegisterCourses = (progress?['needToRegisterCourses'] as int?) ?? 0;
-    final notStartedCourses = (progress?['notStartedCourses'] as int?) ?? 0;
-    final failedCourses = (progress?['failedCourses'] as int?) ?? 0;
+    final completedCourses = progress?.completedCourses ?? 0;
+    final inProgressCourses = progress?.inProgressCourses ?? 0;
+    final registeringCourses = progress?.registeringCourses ?? 0;
+    final needToRegisterCourses = progress?.needToRegisterCourses ?? 0;
+    final notStartedCourses = progress?.notStartedCourses ?? 0;
+    final failedCourses = progress?.failedCourses ?? 0;
 
     return Card(
       margin: const EdgeInsets.all(16),
