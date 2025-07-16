@@ -122,8 +122,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _loadRewardedAd() {
-    _adManager.loadRewardedAd(
+  void _loadInterstitialAd() {
+    _adManager.loadInterstitialAd(
       context: context,
       onAdLoaded: _showSupportDialog,
       onAdFailed: () {
@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               )
-            else if (_adManager.isAdReady)
+            else if (_adManager.isInterstitialAdReady)
               Center(
                 child: ElevatedButton.icon(
                   icon: Icon(Icons.play_circle_outline),
@@ -185,21 +185,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   onPressed: () {
                     Navigator.pop(context);
-                    _adManager.showRewardedAd(
-                      context: context,
-                      onRewardEarned: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              _languageManager.currentStrings.thankYouMessage,
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            backgroundColor: AppColors.progress,
-                            duration: Duration(seconds: 3),
-                          ),
-                        );
-                      },
-                    );
+                    _adManager.showInterstitialAd(context);
+
+                    // _adManager.showInterstitialAd(
+                    //   context: context,
+                    //   onRewardEarned: () {
+                    //     ScaffoldMessenger.of(context).showSnackBar(
+                    //       SnackBar(
+                    //         content: Text(
+                    //           _languageManager.currentStrings.thankYouMessage,
+                    //           style: TextStyle(fontSize: 16),
+                    //         ),
+                    //         backgroundColor: AppColors.progress,
+                    //         duration: Duration(seconds: 3),
+                    //       ),
+                    //     );
+                    //   },
+                    // );
                   },
                 ),
               ),
@@ -311,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 '/settings',
                 AppColors.settings,
               ),
-              // _buildSupportCard(),
+              _buildSupportCard(),
             ],
           ),
           const SizedBox(height: 24),
@@ -381,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Card(
       elevation: 4,
       child: InkWell(
-        onTap: _loadRewardedAd,
+        onTap: _loadInterstitialAd,
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
