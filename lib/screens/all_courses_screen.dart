@@ -8,9 +8,11 @@ import '../l10n/language_manager.dart';
 import '../widgets/course_card.dart';
 
 class AllCoursesScreen extends StatefulWidget {
-  const AllCoursesScreen({super.key, this.courseStatus});
+  const AllCoursesScreen(
+      {super.key, this.courseStatus, this.selectedSectionId});
 
   final CourseStatus? courseStatus;
+  final String? selectedSectionId;
 
   @override
   State<AllCoursesScreen> createState() => _AllCoursesScreenState();
@@ -24,7 +26,7 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
   bool _isLoading = false;
   String _errorMessage = '';
   late final LanguageManager _languageManager;
-  
+
   // Search and filter controllers
   final TextEditingController _searchController = TextEditingController();
   String _selectedSectionId = 'all';
@@ -37,6 +39,7 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
     _languageManager = Provider.of<LanguageManager>(context, listen: false);
     _languageManager.addListener(_onLanguageChanged);
     _selectedStatus = widget.courseStatus;
+    _selectedSectionId = widget.selectedSectionId ?? 'all';
     _loadData();
   }
 
@@ -81,7 +84,8 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
       _filteredCourses = _courses.where((course) {
         // Filter by section
         if (_selectedSectionId != 'all') {
-          final section = _sections.firstWhere((s) => s.id == _selectedSectionId);
+          final section =
+              _sections.firstWhere((s) => s.id == _selectedSectionId);
           if (!section.allCourses.contains(course)) {
             return false;
           }
@@ -107,12 +111,14 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
     });
   }
 
-  Future<void> _saveCourse(Course course, {CourseStatus? status, double? score}) async {
+  Future<void> _saveCourse(Course course,
+      {CourseStatus? status, double? score}) async {
     try {
       // Find the section and course group containing this course
       for (final section in _sections) {
         for (final group in section.courseGroups) {
-          final courseIndex = group.courses.indexWhere((c) => c.id == course.id);
+          final courseIndex =
+              group.courses.indexWhere((c) => c.id == course.id);
           if (courseIndex != -1) {
             var updatedCourse = course;
             if (status != null) {
@@ -121,7 +127,8 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
             if (score != null) {
               updatedCourse = updatedCourse.copyWith(score: score);
             }
-            await _programService.updateCourse(section.id, group.id, updatedCourse);
+            await _programService.updateCourse(
+                section.id, group.id, updatedCourse);
             await _loadData(); // Reload data to ensure consistency
             return;
           }
@@ -167,35 +174,42 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
                     });
                   },
                 ),
-                const SizedBox(height: 16),
                 // Section filter dropdown
-                DropdownButtonFormField<String>(
-                  value: _selectedSectionId,
-                  decoration: InputDecoration(
-                    labelText: _languageManager.currentStrings.filterBySection,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                if (widget.selectedSectionId == null)
+                  Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _selectedSectionId,
+                        decoration: InputDecoration(
+                          labelText:
+                              _languageManager.currentStrings.filterBySection,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        items: [
+                          DropdownMenuItem(
+                            value: 'all',
+                            child:
+                                Text(_languageManager.currentStrings.allSections),
+                          ),
+                          ..._sections.map((section) => DropdownMenuItem(
+                                value: section.id,
+                                child: Text(section.name),
+                              )),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedSectionId = value;
+                              _applyFilters();
+                            });
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                  items: [
-                    DropdownMenuItem(
-                      value: 'all',
-                      child: Text(_languageManager.currentStrings.allSections),
-                    ),
-                    ..._sections.map((section) => DropdownMenuItem(
-                          value: section.id,
-                          child: Text(section.name),
-                        )),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() {
-                        _selectedSectionId = value;
-                        _applyFilters();
-                      });
-                    }
-                  },
-                ),
                 const SizedBox(height: 16),
                 // Status filter dropdown
                 DropdownButtonFormField<CourseStatus?>(
@@ -291,9 +305,9 @@ class _AllCoursesScreenState extends State<AllCoursesScreen> {
           },
           onScoreChanged: (score) {
             _saveCourse(course, score: score);
-          },
+          }, isAcceptedChangeStatus: true,
         );
       },
     );
   }
-} 
+}

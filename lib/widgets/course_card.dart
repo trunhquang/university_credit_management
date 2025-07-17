@@ -9,6 +9,8 @@ class CourseCard extends StatelessWidget {
   final LanguageManager languageManager;
   final void Function(CourseStatus) onChangeCourseStatus;
   final void Function(double)? onScoreChanged;
+  final bool isAcceptedChangeStatus;
+
 
   const CourseCard({
     super.key,
@@ -16,6 +18,7 @@ class CourseCard extends StatelessWidget {
     required this.languageManager,
     required this.onChangeCourseStatus,
     this.onScoreChanged,
+    this.isAcceptedChangeStatus = false,
   });
 
   void _showScoreDialog(BuildContext context) {
@@ -88,7 +91,8 @@ class CourseCard extends StatelessWidget {
                     : AppColors.textSecondary,
               ),
             ),
-            if (course.status == CourseStatus.completed || course.status == CourseStatus.failed)
+            if (course.status == CourseStatus.completed ||
+                course.status == CourseStatus.failed)
               TextButton.icon(
                 onPressed: () => _showScoreDialog(context),
                 style: TextButton.styleFrom(
@@ -99,7 +103,9 @@ class CourseCard extends StatelessWidget {
                 icon: Icon(
                   course.score != null ? Icons.edit : Icons.add_circle_outline,
                   size: 16,
-                  color: course.score != null ? AppColors.primary : AppColors.error,
+                  color: course.score != null
+                      ? AppColors.primary
+                      : AppColors.error,
                 ),
                 label: Text(
                   course.score != null
@@ -107,7 +113,9 @@ class CourseCard extends StatelessWidget {
                       : languageManager.currentStrings.enterScore,
                   style: TextStyle(
                     fontSize: 12,
-                    color: course.score != null ? AppColors.primary : AppColors.error,
+                    color: course.score != null
+                        ? AppColors.primary
+                        : AppColors.error,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -123,7 +131,7 @@ class CourseCard extends StatelessWidget {
             }
             onChangeCourseStatus(status);
             debugPrint('Changing status to $status');
-          },
+          }, isAcceptedChangeStatus: isAcceptedChangeStatus,
         ),
       ),
     );

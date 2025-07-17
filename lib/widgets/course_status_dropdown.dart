@@ -8,12 +8,14 @@ class CourseStatusDropdown extends StatelessWidget {
   final Course course;
   final LanguageManager languageManager;
   final void Function(CourseStatus) onChangeCourseStatus;
+  final bool isAcceptedChangeStatus;
 
   const CourseStatusDropdown({
     super.key,
     required this.course,
     required this.languageManager,
     required this.onChangeCourseStatus,
+    required this.isAcceptedChangeStatus,
   });
 
   Widget _buildCourseStatusChip(CourseStatus status) {
@@ -84,7 +86,7 @@ class CourseStatusDropdown extends StatelessWidget {
           CourseStatus.completed,
           CourseStatus.failed,
           CourseStatus.registering
-        ].contains(course.status)) {
+        ].contains(course.status) || isAcceptedChangeStatus) {
           var list = [
             CourseStatus.inProgress,
             CourseStatus.completed,

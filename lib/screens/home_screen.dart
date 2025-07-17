@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
         screen = const SettingsScreen();
         break;
       case '/registering':
-        screen =  RegisteringCourseScreen();
+        screen =  const RegisteringCourseScreen();
         break;
       default:
         return;
@@ -276,12 +276,11 @@ class _HomeScreenState extends State<HomeScreen> {
               gpa: gpa,
               englishCert: englishCert!,
             ),
-          const SizedBox(height: 16),
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.only(left: 16, right: 16),
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
             children: [

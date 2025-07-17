@@ -8,6 +8,7 @@ import '../l10n/language_manager.dart';
 import '../theme/app_colors.dart';
 import '../widgets/course_card.dart';
 import 'course_list_screen.dart';
+import 'all_courses_screen.dart';
 
 class CourseGroupScreen extends StatefulWidget {
   final Section section;
@@ -439,39 +440,54 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _section.name,
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AllCoursesScreen(selectedSectionId: _section.id),
+                  ),
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _section.name,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            decoration: isSectionCompleted
+                                ? TextDecoration.lineThrough
+                                : null,
+                            color: isSectionCompleted
+                                ? AppColors.textSecondary
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      if (isSectionCompleted)
+                        const Icon(
+                          Icons.check_circle,
+                          color: AppColors.success,
+                          size: 24,
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _section.description,
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      decoration: isSectionCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
+                      fontSize: 14,
                       color: isSectionCompleted
                           ? AppColors.textSecondary
-                          : AppColors.textPrimary,
+                          : AppColors.textSecondary,
                     ),
                   ),
-                ),
-                if (isSectionCompleted)
-                  const Icon(
-                    Icons.check_circle,
-                    color: AppColors.success,
-                    size: 24,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _section.description,
-              style: TextStyle(
-                fontSize: 14,
-                color: isSectionCompleted
-                    ? AppColors.textSecondary
-                    : AppColors.textSecondary,
+                ],
               ),
             ),
             const SizedBox(height: 16),
@@ -627,9 +643,11 @@ class _CourseGroupScreenState extends State<CourseGroupScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _section.courseGroups.map((group) {
-          return _buildCourseGroupCard(group);
-        }).toList(),
+        children: _section.courseGroups
+            .where((group) => _filterCourses(group.courses).isNotEmpty)
+            .map((group) {
+              return _buildCourseGroupCard(group);
+            }).toList(),
       ),
     );
   }
