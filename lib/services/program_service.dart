@@ -44,16 +44,16 @@ class ProgramService {
     final sections = [
       Section(
         name: 'Kiến thức giáo dục đại cương',
-        requiredCredits: 34 + 8,
+        requiredCredits: 34,
         optionalCredits: 22,
         description: 'Các môn học cơ bản, rèn luyện tư duy và kỹ năng',
         id: '1',
         courseGroups: [
           CourseGroup(
             id: '1.1',
-            name: 'Lý luận chính trị - Pháp luật',
+            name: 'Lý luận chính trị',
             description: 'Các môn học về lý luận chính trị',
-            requiredCredits: 14,
+            requiredCredits: 11,
             optionalCredits: 0,
             courses: [
               Course(
@@ -97,6 +97,15 @@ class ProgramService {
                 status: CourseStatus.notStarted,
                 prerequisiteCourses: [],
               ),
+            ],
+          ),
+          CourseGroup(
+            id: '1.2',
+            name: 'Khoa học xã hội - Kinh tế - Kỹ năng',
+            description: 'Các môn học về khoa học xã hội và kinh tế',
+            requiredCredits: 3,
+            optionalCredits: 2,
+            courses: [
               Course(
                 name: 'Pháp luật đại cương',
                 credits: 3,
@@ -105,15 +114,6 @@ class ProgramService {
                 status: CourseStatus.inProgress,
                 prerequisiteCourses: [],
               ),
-            ],
-          ),
-          CourseGroup(
-            id: '1.2',
-            name: 'Khoa học xã hội - Kinh tế - Kỹ năng',
-            description: 'Các môn học về khoa học xã hội và kinh tế',
-            requiredCredits: 0,
-            optionalCredits: 2,
-            courses: [
               Course(
                 name: 'Kinh tế đại cương',
                 credits: 2,
@@ -292,14 +292,14 @@ class ProgramService {
                 status: CourseStatus.notStarted,
                 prerequisiteCourses: [],
               ),
-              // Course(
-              //   name: 'Phép tính vị từ',
-              //   credits: 4,
-              //   id: 'MTH00054',
-              //   type: CourseType.optional,
-              //   status: CourseStatus.notStarted,
-              //   prerequisiteCourses: [],
-              // ),
+              Course(
+                name: 'Phép tính vị từ',
+                credits: 4,
+                id: 'MTH00054',
+                type: CourseType.optional,
+                status: CourseStatus.notStarted,
+                prerequisiteCourses: [],
+              ),
             ],
           ),
           CourseGroup(
@@ -457,40 +457,6 @@ class ProgramService {
                 status: CourseStatus.notStarted,
                 prerequisiteCourses: [],
               ),
-            ],
-          ),
-          CourseGroup(
-            id: '1.9',
-            name: 'Giáo dục thể chất - Quốc phòng',
-            description: 'Giáo dục thể chất - Quốc phòng',
-            requiredCredits: 8,
-            optionalCredits: 0,
-            courses: [
-              Course(
-                name: 'Giáo dục thể chất 1',
-                credits: 2,
-                id: 'BAA00021',
-                type: CourseType.required,
-                status: CourseStatus.notStarted,
-                score: 7.5,
-                prerequisiteCourses: [],
-              ),
-              Course(
-                name: 'Giáo dục thể chất 2',
-                credits: 2,
-                id: 'BAA00022',
-                type: CourseType.required,
-                status: CourseStatus.notStarted,
-                prerequisiteCourses: [],
-              ),
-              Course(
-                name: 'Giáo dục quốc phòng - An ninh',
-                credits: 4,
-                id: 'BAA00030',
-                type: CourseType.required,
-                status: CourseStatus.notStarted,
-                prerequisiteCourses: [],
-              )
             ],
           ),
         ],
@@ -831,22 +797,6 @@ class ProgramService {
                 name: 'Đồ án Phần mềm',
                 credits: 6,
                 id: 'CSC13123',
-                type: CourseType.optional,
-                status: CourseStatus.notStarted,
-                prerequisiteCourses: [],
-              ),
-              Course(
-                name: 'Khóa luận tốt nghiệp',
-                credits: 10,
-                id: 'CSC10251',
-                type: CourseType.optional,
-                status: CourseStatus.notStarted,
-                prerequisiteCourses: [],
-              ),
-              Course(
-                name: 'Thực tập tốt nghiệp',
-                credits: 10,
-                id: 'CSC102512',
                 type: CourseType.optional,
                 status: CourseStatus.notStarted,
                 prerequisiteCourses: [],
