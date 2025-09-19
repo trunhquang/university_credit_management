@@ -102,12 +102,27 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Làm mới dữ liệu'),
-        content: const Text('Bạn có chắc muốn tải lại dữ liệu từ template?'),
+        title: Text(
+          'Làm mới dữ liệu',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        content: Text(
+          'Bạn có chắc muốn tải lại dữ liệu từ template?',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(
+              'Hủy',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -117,7 +132,12 @@ class SettingsPage extends StatelessWidget {
                 const SnackBar(content: Text('Đã làm mới dữ liệu')),
               );
             },
-            child: const Text('Xác nhận'),
+            child: Text(
+              'Xác nhận',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
+            ),
           ),
         ],
       ),
@@ -128,14 +148,27 @@ class SettingsPage extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Reset dữ liệu'),
-        content: const Text(
+        title: Text(
+          'Reset dữ liệu',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        content: Text(
           'Bạn có chắc muốn xóa tất cả dữ liệu và reset về trạng thái ban đầu?\n\nHành động này không thể hoàn tác!',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(
+              'Hủy',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -146,8 +179,8 @@ class SettingsPage extends StatelessWidget {
               );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.error,
+              foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             child: const Text('Reset'),
           ),

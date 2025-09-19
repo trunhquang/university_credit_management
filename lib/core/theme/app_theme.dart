@@ -60,18 +60,23 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: AppSizes.elevationSm,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: AppSizes.radiusMdAll,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.onPrimary,
+          ),
         ),
       ),
       
       // Outlined Button
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
@@ -81,19 +86,24 @@ class AppTheme {
             color: colorScheme.outline,
             width: AppSizes.borderWidthThin,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.primary,
+          ),
         ),
       ),
       
       // Text Button
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: AppSizes.radiusMdAll,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.primary,
+          ),
         ),
       ),
       
@@ -158,11 +168,16 @@ class AppTheme {
       // Dialog
       dialogTheme: DialogTheme(
         elevation: AppSizes.elevationXl,
+        backgroundColor: colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.radiusLgAll,
         ),
-        titleTextStyle: AppTypography.textTheme.headlineSmall,
-        contentTextStyle: AppTypography.textTheme.bodyMedium,
+        titleTextStyle: AppTypography.textTheme.headlineSmall?.copyWith(
+          color: colorScheme.onSurface,
+        ),
+        contentTextStyle: AppTypography.textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurface,
+        ),
       ),
       
       // Bottom Sheet
@@ -236,18 +251,23 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           elevation: AppSizes.elevationSm,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: AppSizes.radiusMdAll,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.onPrimary,
+          ),
         ),
       ),
       
       // Outlined Button
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
@@ -257,19 +277,24 @@ class AppTheme {
             color: colorScheme.outline,
             width: AppSizes.borderWidthThin,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.primary,
+          ),
         ),
       ),
       
       // Text Button
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           padding: AppSizes.buttonPadding,
           minimumSize: const Size(AppSizes.buttonMinWidth, AppSizes.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: AppSizes.radiusMdAll,
           ),
-          textStyle: AppTypography.textTheme.labelLarge,
+          textStyle: AppTypography.textTheme.labelLarge?.copyWith(
+            color: colorScheme.primary,
+          ),
         ),
       ),
       
@@ -334,11 +359,16 @@ class AppTheme {
       // Dialog
       dialogTheme: DialogTheme(
         elevation: AppSizes.elevationXl,
+        backgroundColor: colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.radiusLgAll,
         ),
-        titleTextStyle: AppTypography.textTheme.headlineSmall,
-        contentTextStyle: AppTypography.textTheme.bodyMedium,
+        titleTextStyle: AppTypography.textTheme.headlineSmall?.copyWith(
+          color: colorScheme.onSurface,
+        ),
+        contentTextStyle: AppTypography.textTheme.bodyMedium?.copyWith(
+          color: colorScheme.onSurface,
+        ),
       ),
       
       // Bottom Sheet
