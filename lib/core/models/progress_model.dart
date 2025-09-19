@@ -1,142 +1,246 @@
-class ProgressModel {
-  // Tổng quan
-  final int totalCredits;
-  final int completedCredits;
-  final int inProgressCredits;
-  final int remainingCredits;
-  final double percentage;
+import 'package:flutter/foundation.dart';
+import 'section.dart';
+import 'course.dart';
 
-  // Tín chỉ bắt buộc
-  final int completedRequiredCredits;
-  final int inProgressRequiredCredits;
-  final int registeringRequiredCredits;
-  final int needToRegisterRequiredCredits;
-  final int notStartedRequiredCredits;
-  final int failedRequiredCredits;
-  final int totalRequiredCredits;
+/// Model để theo dõi tiến độ học tập
+class ProgressModel with ChangeNotifier {
+  List<Section> _sections = [];
+  int _totalCredits = 138;
+  int _completedCredits = 0;
+  int _inProgressCredits = 0;
+  int _notStartedCredits = 0;
 
-  // Tín chỉ tự chọn
-  final int completedOptionalCredits;
-  final int inProgressOptionalCredits;
-  final int registeringOptionalCredits;
-  final int needToRegisterOptionalCredits;
-  final int notStartedOptionalCredits;
-  final int failedOptionalCredits;
-  final int totalOptionalCredits;
+  List<Section> get sections => _sections;
+  int get totalCredits => _totalCredits;
+  int get completedCredits => _completedCredits;
+  int get inProgressCredits => _inProgressCredits;
+  int get notStartedCredits => _notStartedCredits;
 
-  // Tổng số tín chỉ theo trạng thái
-  final int totalRegisteringCredits;
-  final int totalNeedToRegisterCredits;
-  final int totalNotStartedCredits;
-  final int totalFailedCredits;
+  double get overallProgress => _totalCredits > 0 ? _completedCredits / _totalCredits : 0.0;
+  double get overallProgressPercentage => overallProgress * 100;
 
-  // Số môn học theo trạng thái
-  final int completedCourses;
-  final int inProgressCourses;
-  final int registeringCourses;
-  final int needToRegisterCourses;
-  final int notStartedCourses;
-  final int failedCourses;
+  /// Cập nhật tiến độ từ danh sách sections
+  void updateProgress(List<Section> sections) {
+    _sections = sections;
+    _calculateProgress();
+    notifyListeners();
+  }
 
-  int get totalCourses => completedCourses + inProgressCourses + registeringCourses + needToRegisterCourses + notStartedCourses + failedCourses;
+  /// Tính toán tiến độ tổng thể
+  void _calculateProgress() {
+    _completedCredits = 0;
+    _inProgressCredits = 0;
+    _notStartedCredits = 0;
 
-  ProgressModel({
-    required this.totalCredits,
-    required this.completedCredits,
-    required this.inProgressCredits,
-    required this.remainingCredits,
-    required this.percentage,
-    required this.completedRequiredCredits,
-    required this.inProgressRequiredCredits,
-    required this.registeringRequiredCredits,
-    required this.needToRegisterRequiredCredits,
-    required this.notStartedRequiredCredits,
-    required this.failedRequiredCredits,
-    required this.totalRequiredCredits,
-    required this.completedOptionalCredits,
-    required this.inProgressOptionalCredits,
-    required this.registeringOptionalCredits,
-    required this.needToRegisterOptionalCredits,
-    required this.notStartedOptionalCredits,
-    required this.failedOptionalCredits,
-    required this.totalOptionalCredits,
-    required this.totalRegisteringCredits,
-    required this.totalNeedToRegisterCredits,
-    required this.totalNotStartedCredits,
-    required this.totalFailedCredits,
-    required this.completedCourses,
-    required this.inProgressCourses,
-    required this.registeringCourses,
-    required this.needToRegisterCourses,
-    required this.notStartedCourses,
-    required this.failedCourses,
-  });
+    for (var section in _sections) {
+      for (var group in section.courseGroups) {
+        for (var course in group.courses) {
+          switch (course.status) {
+            case CourseStatus.completed:
+              _completedCredits += course.credits;
+              break;
+            case CourseStatus.inProgress:
+              _inProgressCredits += course.credits;
+              break;
+            case CourseStatus.notStarted:
+            case CourseStatus.failed:
+            case CourseStatus.registering:
+            case CourseStatus.needToRegister:
+              _notStartedCredits += course.credits;
+              break;
+          }
+        }
+      }
+    }
+  }
 
-  factory ProgressModel.fromJson(Map<String, dynamic> json) {
-    return ProgressModel(
-      totalCredits: json['totalCredits'] as int? ?? 0,
-      completedCredits: json['completedCredits'] as int? ?? 0,
-      inProgressCredits: json['inProgressCredits'] as int? ?? 0,
-      remainingCredits: json['remainingCredits'] as int? ?? 0,
-      percentage: (json['percentage'] as num?)?.toDouble() ?? 0.0,
-      completedRequiredCredits: json['completedRequiredCredits'] as int? ?? 0,
-      inProgressRequiredCredits: json['inProgressRequiredCredits'] as int? ?? 0,
-      registeringRequiredCredits: json['registeringRequiredCredits'] as int? ?? 0,
-      needToRegisterRequiredCredits: json['needToRegisterRequiredCredits'] as int? ?? 0,
-      notStartedRequiredCredits: json['notStartedRequiredCredits'] as int? ?? 0,
-      failedRequiredCredits: json['failedRequiredCredits'] as int? ?? 0,
-      totalRequiredCredits: json['totalRequiredCredits'] as int? ?? 0,
-      completedOptionalCredits: json['completedOptionalCredits'] as int? ?? 0,
-      inProgressOptionalCredits: json['inProgressOptionalCredits'] as int? ?? 0,
-      registeringOptionalCredits: json['registeringOptionalCredits'] as int? ?? 0,
-      needToRegisterOptionalCredits: json['needToRegisterOptionalCredits'] as int? ?? 0,
-      notStartedOptionalCredits: json['notStartedOptionalCredits'] as int? ?? 0,
-      failedOptionalCredits: json['failedOptionalCredits'] as int? ?? 0,
-      totalOptionalCredits: json['totalOptionalCredits'] as int? ?? 0,
-      totalRegisteringCredits: json['totalRegisteringCredits'] as int? ?? 0,
-      totalNeedToRegisterCredits: json['totalNeedToRegisterCredits'] as int? ?? 0,
-      totalNotStartedCredits: json['totalNotStartedCredits'] as int? ?? 0,
-      totalFailedCredits: json['totalFailedCredits'] as int? ?? 0,
-      completedCourses: json['completedCourses'] as int? ?? 0,
-      inProgressCourses: json['inProgressCourses'] as int? ?? 0,
-      registeringCourses: json['registeringCourses'] as int? ?? 0,
-      needToRegisterCourses: json['needToRegisterCourses'] as int? ?? 0,
-      notStartedCourses: json['notStartedCourses'] as int? ?? 0,
-      failedCourses: json['failedCourses'] as int? ?? 0,
-    );
+  /// Lấy tiến độ theo khối kiến thức
+  Map<String, SectionProgress> getSectionProgress() {
+    Map<String, SectionProgress> sectionProgress = {};
+    
+    for (var section in _sections) {
+      int completed = 0;
+      int inProgress = 0;
+      int notStarted = 0;
+      int total = section.totalCredits;
+
+      for (var group in section.courseGroups) {
+        for (var course in group.courses) {
+          switch (course.status) {
+            case CourseStatus.completed:
+              completed += course.credits;
+              break;
+            case CourseStatus.inProgress:
+              inProgress += course.credits;
+              break;
+            default:
+              notStarted += course.credits;
+              break;
+          }
+        }
+      }
+
+      sectionProgress[section.id] = SectionProgress(
+        sectionName: section.name,
+        totalCredits: total,
+        completedCredits: completed,
+        inProgressCredits: inProgress,
+        notStartedCredits: notStarted,
+        progressPercentage: total > 0 ? (completed / total) * 100 : 0.0,
+      );
+    }
+
+    return sectionProgress;
+  }
+
+  /// Lấy thống kê môn học
+  Map<String, int> getCourseStatistics() {
+    int totalCourses = 0;
+    int completedCourses = 0;
+    int inProgressCourses = 0;
+    int notStartedCourses = 0;
+
+    for (var section in _sections) {
+      for (var group in section.courseGroups) {
+        for (var course in group.courses) {
+          totalCourses++;
+          switch (course.status) {
+            case CourseStatus.completed:
+              completedCourses++;
+              break;
+            case CourseStatus.inProgress:
+              inProgressCourses++;
+              break;
+            default:
+              notStartedCourses++;
+              break;
+          }
+        }
+      }
+    }
+
+    return {
+      'total': totalCourses,
+      'completed': completedCourses,
+      'inProgress': inProgressCourses,
+      'notStarted': notStartedCourses,
+    };
+  }
+
+  /// Lấy danh sách môn học theo trạng thái
+  List<Course> getCoursesByStatus(CourseStatus status) {
+    List<Course> courses = [];
+    
+    for (var section in _sections) {
+      for (var group in section.courseGroups) {
+        for (var course in group.courses) {
+          if (course.status == status) {
+            courses.add(course);
+          }
+        }
+      }
+    }
+    
+    return courses;
+  }
+
+  /// Lấy danh sách môn học sắp tới (chưa bắt đầu)
+  List<Course> getUpcomingCourses({int limit = 5}) {
+    List<Course> upcomingCourses = getCoursesByStatus(CourseStatus.notStarted);
+    
+    // Sắp xếp theo thứ tự ưu tiên (có thể dựa trên prerequisite)
+    upcomingCourses.sort((a, b) => a.name.compareTo(b.name));
+    
+    return upcomingCourses.take(limit).toList();
+  }
+
+  /// Kiểm tra xem có thể tốt nghiệp không
+  bool canGraduate() {
+    return _completedCredits >= _totalCredits;
+  }
+
+  /// Ước tính thời gian còn lại để tốt nghiệp (dựa trên trung bình 20 tín chỉ/học kỳ)
+  int getEstimatedSemestersRemaining() {
+    int remainingCredits = _totalCredits - _completedCredits;
+    if (remainingCredits <= 0) return 0;
+    
+    // Giả sử trung bình 20 tín chỉ mỗi học kỳ
+    int semesters = (remainingCredits / 20).ceil();
+    return semesters;
+  }
+
+  /// Lấy tiến độ theo loại môn (bắt buộc/tự chọn)
+  Map<String, int> getProgressByType() {
+    int requiredCompleted = 0;
+    int requiredTotal = 0;
+    int optionalCompleted = 0;
+    int optionalTotal = 0;
+
+    for (var section in _sections) {
+      for (var group in section.courseGroups) {
+        for (var course in group.courses) {
+          if (course.type == CourseType.required) {
+            requiredTotal += course.credits;
+            if (course.status == CourseStatus.completed) {
+              requiredCompleted += course.credits;
+            }
+          } else {
+            optionalTotal += course.credits;
+            if (course.status == CourseStatus.completed) {
+              optionalCompleted += course.credits;
+            }
+          }
+        }
+      }
+    }
+
+    return {
+      'requiredCompleted': requiredCompleted,
+      'requiredTotal': requiredTotal,
+      'optionalCompleted': optionalCompleted,
+      'optionalTotal': optionalTotal,
+    };
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'totalCredits': totalCredits,
-      'completedCredits': completedCredits,
-      'inProgressCredits': inProgressCredits,
-      'remainingCredits': remainingCredits,
-      'percentage': percentage,
-      'completedRequiredCredits': completedRequiredCredits,
-      'inProgressRequiredCredits': inProgressRequiredCredits,
-      'registeringRequiredCredits': registeringRequiredCredits,
-      'needToRegisterRequiredCredits': needToRegisterRequiredCredits,
-      'notStartedRequiredCredits': notStartedRequiredCredits,
-      'failedRequiredCredits': failedRequiredCredits,
-      'totalRequiredCredits': totalRequiredCredits,
-      'completedOptionalCredits': completedOptionalCredits,
-      'inProgressOptionalCredits': inProgressOptionalCredits,
-      'registeringOptionalCredits': registeringOptionalCredits,
-      'needToRegisterOptionalCredits': needToRegisterOptionalCredits,
-      'notStartedOptionalCredits': notStartedOptionalCredits,
-      'failedOptionalCredits': failedOptionalCredits,
-      'totalOptionalCredits': totalOptionalCredits,
-      'totalRegisteringCredits': totalRegisteringCredits,
-      'totalNeedToRegisterCredits': totalNeedToRegisterCredits,
-      'totalNotStartedCredits': totalNotStartedCredits,
-      'totalFailedCredits': totalFailedCredits,
-      'completedCourses': completedCourses,
-      'inProgressCourses': inProgressCourses,
-      'registeringCourses': registeringCourses,
-      'needToRegisterCourses': needToRegisterCourses,
-      'notStartedCourses': notStartedCourses,
-      'failedCourses': failedCourses,
+      'totalCredits': _totalCredits,
+      'completedCredits': _completedCredits,
+      'inProgressCredits': _inProgressCredits,
+      'notStartedCredits': _notStartedCredits,
     };
   }
-} 
+
+  factory ProgressModel.fromJson(Map<String, dynamic> json) {
+    final model = ProgressModel();
+    model._totalCredits = json['totalCredits'] ?? 138;
+    model._completedCredits = json['completedCredits'] ?? 0;
+    model._inProgressCredits = json['inProgressCredits'] ?? 0;
+    model._notStartedCredits = json['notStartedCredits'] ?? 0;
+    return model;
+  }
+
+  ProgressModel();
+}
+
+/// Class để lưu trữ tiến độ của một khối kiến thức
+class SectionProgress {
+  final String sectionName;
+  final int totalCredits;
+  final int completedCredits;
+  final int inProgressCredits;
+  final int notStartedCredits;
+  final double progressPercentage;
+
+  SectionProgress({
+    required this.sectionName,
+    required this.totalCredits,
+    required this.completedCredits,
+    required this.inProgressCredits,
+    required this.notStartedCredits,
+    required this.progressPercentage,
+  });
+
+  int get remainingCredits => totalCredits - completedCredits;
+  double get completionRate => totalCredits > 0 ? completedCredits / totalCredits : 0.0;
+}

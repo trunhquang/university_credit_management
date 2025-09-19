@@ -158,4 +158,6 @@ class GPAModel with ChangeNotifier {
       json['gradePredictions'] ?? {});
     return model;
   }
+
+  GPAModel();
 }
