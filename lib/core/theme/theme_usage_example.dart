@@ -163,7 +163,7 @@ class ThemeUsageExample extends StatelessWidget {
                 Chip(label: Text('Default')),
                 Chip(
                   label: Text('Selected'),
-                  selected: true,
+                  onDeleted: () {},
                 ),
                 Chip(
                   label: Text('Success'),
