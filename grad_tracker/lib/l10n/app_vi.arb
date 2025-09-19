@@ -1,0 +1,11 @@
+{
+  "appTitle": "Theo dõi điều kiện tốt nghiệp",
+  "eligible": "ĐỦ ĐIỀU KIỆN",
+  "notEligible": "CHƯA ĐỦ",
+  "totalRequired": "Tổng yêu cầu: {credits} TC",
+  "totalEarned": "Đã tích lũy: {credits} TC",
+  "meetsCategory": "Đạt yêu cầu học phần",
+  "notMeetsCategory": "Chưa đạt yêu cầu học phần"
+}
+
+

@@ -1,0 +1,20 @@
+name: grad_tracker
+description: A simple app to track graduation requirements
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.0.5
+  shared_preferences: ^2.2.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+

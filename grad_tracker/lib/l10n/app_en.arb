@@ -1,0 +1,11 @@
+{
+  "appTitle": "Graduation Tracker",
+  "eligible": "ELIGIBLE",
+  "notEligible": "NOT YET",
+  "totalRequired": "Total required: {credits} credits",
+  "totalEarned": "Earned: {credits} credits",
+  "meetsCategory": "Meets category requirement",
+  "notMeetsCategory": "Does not meet category requirement"
+}
+
+
