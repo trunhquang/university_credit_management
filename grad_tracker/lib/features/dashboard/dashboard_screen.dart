@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/state/curriculum_state.dart';
+import '../../core/models/category.dart';
 import '../detail/category_detail_screen.dart';
-import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_sizes.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -31,7 +32,7 @@ class DashboardScreen extends StatelessWidget {
       body: ListView(
         children: [
           Padding(
-            padding: AppSpacing.screen,
+            padding: AppSizes.screenPadding,
             child: Row(
               children: [
                 Expanded(
@@ -69,13 +70,13 @@ class _CategoryTile extends StatelessWidget {
     final earned = state.earnedCreditsIn(category);
     final done = earned >= category.requiredCredits;
     return Card(
-      margin: const EdgeInsets.all(AppSpacing.md),
+      margin: const EdgeInsets.all(AppSizes.md),
       child: InkWell(
         onTap: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => CategoryDetailScreen(category: category)),
         ),
         child: Padding(
-          padding: AppSpacing.card,
+          padding: AppSizes.cardPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

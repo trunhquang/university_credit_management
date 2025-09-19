@@ -44,10 +44,10 @@ class AppTheme {
       
       // Chip
       chipTheme: ChipThemeData(
-        backgroundColor: BrandColors.light.primaryLight,
-        selectedColor: BrandColors.light.primary,
+        backgroundColor: BrandColors.lightTheme.primaryLight,
+        selectedColor: BrandColors.lightTheme.primary,
         labelStyle: AppTypography.textTheme.labelMedium?.copyWith(
-          color: BrandColors.light.primary,
+          color: BrandColors.lightTheme.primary,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.radiusRoundAll,
@@ -125,7 +125,7 @@ class AppTheme {
         errorBorder: OutlineInputBorder(
           borderRadius: AppSizes.radiusMdAll,
           borderSide: BorderSide(
-            color: BrandColors.light.danger,
+            color: BrandColors.lightTheme.danger,
             width: AppSizes.borderWidthThin,
           ),
         ),
@@ -176,7 +176,7 @@ class AppTheme {
       
       // Extensions
       extensions: const <ThemeExtension<dynamic>>[
-        BrandColors.light,
+        BrandColors.lightTheme,
       ],
     );
   }
@@ -220,10 +220,10 @@ class AppTheme {
       
       // Chip
       chipTheme: ChipThemeData(
-        backgroundColor: BrandColors.dark.primaryLight,
-        selectedColor: BrandColors.dark.primary,
+        backgroundColor: BrandColors.darkTheme.primaryLight,
+        selectedColor: BrandColors.darkTheme.primary,
         labelStyle: AppTypography.textTheme.labelMedium?.copyWith(
-          color: BrandColors.dark.primary,
+          color: BrandColors.darkTheme.primary,
         ),
         shape: RoundedRectangleBorder(
           borderRadius: AppSizes.radiusRoundAll,
@@ -301,7 +301,7 @@ class AppTheme {
         errorBorder: OutlineInputBorder(
           borderRadius: AppSizes.radiusMdAll,
           borderSide: BorderSide(
-            color: BrandColors.dark.danger,
+            color: BrandColors.darkTheme.danger,
             width: AppSizes.borderWidthThin,
           ),
         ),
@@ -352,7 +352,7 @@ class AppTheme {
       
       // Extensions
       extensions: const <ThemeExtension<dynamic>>[
-        BrandColors.dark,
+        BrandColors.darkTheme,
       ],
     );
   }

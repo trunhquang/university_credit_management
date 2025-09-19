@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
-import '../models/category.dart';
+import '../models/category.dart' as models;
 import '../repositories/curriculum_repository.dart';
 
 class CurriculumState extends ChangeNotifier {
   final CurriculumRepository _repo = CurriculumRepository();
-  late final List<Category> categories = _repo.loadCategories();
+  late final List<models.Category> categories = _repo.loadCategories();
   final Map<String, bool> _completed = {};
 
   Future<void> load() async {
@@ -20,7 +20,7 @@ class CurriculumState extends ChangeNotifier {
 
   bool isDone(String code) => _completed[code] ?? false;
 
-  int earnedCreditsIn(Category cat) {
+  int earnedCreditsIn(models.Category cat) {
     int sum = 0;
     for (final c in cat.courses) {
       if (isDone(c.code)) sum += c.credits;
@@ -28,9 +28,9 @@ class CurriculumState extends ChangeNotifier {
     return sum;
   }
 
-  int get totalRequired => categories.fold(0, (a, c) => a + c.requiredCredits);
+  int get totalRequired => categories.fold<int>(0, (a, c) => a + c.requiredCredits);
 
-  int get totalEarned => categories.fold(0, (a, c) => a + earnedCreditsIn(c).clamp(0, c.requiredCredits));
+  int get totalEarned => categories.fold<int>(0, (a, c) => a + earnedCreditsIn(c).clamp(0, c.requiredCredits));
 
   bool get eligibleToGraduate => categories.every((c) => earnedCreditsIn(c) >= c.requiredCredits);
 }

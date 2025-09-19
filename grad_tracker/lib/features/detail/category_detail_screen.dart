@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/models/category.dart';
 import '../../core/state/curriculum_state.dart';
-import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_sizes.dart';
 
 class CategoryDetailScreen extends StatelessWidget {
   final Category category;
@@ -27,7 +27,7 @@ class CategoryDetailScreen extends StatelessWidget {
         },
       ),
       bottomNavigationBar: Padding(
-        padding: AppSpacing.card,
+        padding: AppSizes.cardPadding,
         child: Builder(
           builder: (context) {
             final earned = state.earnedCreditsIn(category);

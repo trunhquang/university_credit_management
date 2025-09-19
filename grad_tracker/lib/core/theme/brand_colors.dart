@@ -27,7 +27,7 @@ class BrandColors extends ThemeExtension<BrandColors> {
   final Color accent;
 
   // Light theme brand colors
-  static const BrandColors light = BrandColors(
+  static const BrandColors lightTheme = BrandColors(
     primary: Color(0xFF00796B), // Teal 700
     secondary: Color(0xFF26A69A), // Teal 400
     success: Color(0xFF2E7D32), // Green 800
@@ -41,7 +41,7 @@ class BrandColors extends ThemeExtension<BrandColors> {
   );
 
   // Dark theme brand colors
-  static const BrandColors dark = BrandColors(
+  static const BrandColors darkTheme = BrandColors(
     primary: Color(0xFF4DB6AC), // Teal 300
     secondary: Color(0xFF80CBC4), // Teal 200
     success: Color(0xFF66BB6A), // Green 400
