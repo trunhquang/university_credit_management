@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/state/curriculum_provider.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/services/notification_service.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -128,9 +129,7 @@ class SettingsPage extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               context.read<CurriculumProvider>().initializeCurriculum();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã làm mới dữ liệu')),
-              );
+              NotificationService.showSnack(context, 'Đã làm mới dữ liệu');
             },
             child: Text(
               'Xác nhận',
@@ -174,9 +173,7 @@ class SettingsPage extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               context.read<CurriculumProvider>().resetToTemplate();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã reset dữ liệu')),
-              );
+              NotificationService.showSnack(context, 'Đã reset dữ liệu');
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,

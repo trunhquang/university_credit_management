@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/state/curriculum_provider.dart';
 import '../../../../core/models/course.dart';
 import '../../../../core/navigation/app_router.dart';
+import '../../../../core/services/notification_service.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final String courseId;
@@ -443,13 +444,9 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
               if (score != null && score >= 0 && score <= 10) {
                 provider.updateCourseScore(course.id, score);
                 setState(() => _isEditing = false);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Đã cập nhật điểm số')),
-                );
+                NotificationService.showSnack(context, 'Đã cập nhật điểm số');
               } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Điểm số phải từ 0-10')),
-                );
+                NotificationService.showSnack(context, 'Điểm số phải từ 0-10');
               }
             },
             child: const Text('Lưu điểm số'),

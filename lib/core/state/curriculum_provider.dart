@@ -7,12 +7,14 @@ import '../models/course.dart';
 import '../models/gpa_model.dart';
 import '../models/progress_model.dart';
 import '../data/curriculum_template.dart';
+import '../data/gpa_history_service.dart';
 
 /// Provider để quản lý state của curriculum
 class CurriculumProvider with ChangeNotifier {
   List<Section> _sections = [];
   GPAModel _gpaModel = GPAModel();
   ProgressModel _progressModel = ProgressModel();
+  final GPAHistoryService _gpaHistory = GPAHistoryService();
   bool _isLoading = false;
   String? _error;
 
@@ -95,6 +97,13 @@ class CurriculumProvider with ChangeNotifier {
     }
     
     _gpaModel.calculateGPA(allCourses);
+
+    // Lưu lịch sử GPA
+    _gpaHistory.append(GPAHistoryEntry(
+      timestamp: DateTime.now(),
+      gpa: _gpaModel.currentGPA,
+      completedCredits: _gpaModel.completedCredits,
+    ));
   }
 
   /// Cập nhật trạng thái môn học
