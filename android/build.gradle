@@ -5,6 +5,12 @@ allprojects {
     }
 }
 
+// Global configuration for 16KB page size support
+ext {
+    // Enable 16KB page size support for all native libraries
+    androidSupportFlexiblePageSizes = true
+}
+
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
