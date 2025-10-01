@@ -25,6 +25,7 @@ class SemesterPlan {
   final List<PlannedCourseRef> plannedCourses;
   final String? note;
   final String? schedule; // simple text schedule placeholder
+  final int creditLimit; // Giới hạn tín chỉ cho học kỳ này
 
   SemesterPlan({
     required this.id,
@@ -33,6 +34,7 @@ class SemesterPlan {
     List<PlannedCourseRef>? plannedCourses,
     this.note,
     this.schedule,
+    this.creditLimit = 20, // Default 20 tín chỉ
   }) : plannedCourses = plannedCourses ?? [];
 
   int get totalCredits =>
@@ -45,6 +47,7 @@ class SemesterPlan {
         'plannedCourses': plannedCourses.map((e) => e.toJson()).toList(),
         'note': note,
         'schedule': schedule,
+        'creditLimit': creditLimit,
       };
 
   factory SemesterPlan.fromJson(Map<String, dynamic> json) => SemesterPlan(
@@ -56,6 +59,7 @@ class SemesterPlan {
             .toList(),
         note: json['note'] as String?,
         schedule: json['schedule'] as String?,
+        creditLimit: (json['creditLimit'] as num?)?.toInt() ?? 20,
       );
 }
 

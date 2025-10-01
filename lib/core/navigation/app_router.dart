@@ -53,6 +53,7 @@ class AppRouter {
         }
         break;
       case 'replace':
+        // For main tabs, replace the current page or add if stack is empty
         if (_navigationStack.isNotEmpty) {
           _navigationStack.removeLast();
         }
@@ -73,7 +74,7 @@ class AppRouter {
         path: dashboard,
         name: 'dashboard',
         builder: (context, state) {
-          _updateStack('dashboard', 'push');
+          _updateStack('dashboard', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'dashboard');
           return const DashboardPage();
         },
@@ -84,7 +85,7 @@ class AppRouter {
         path: courses,
         name: 'courses',
         builder: (context, state) {
-          _updateStack('courses', 'push');
+          _updateStack('courses', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'courses');
           return const CoursesListPage();
         },
@@ -107,7 +108,7 @@ class AppRouter {
         path: progress,
         name: 'progress',
         builder: (context, state) {
-          _updateStack('progress', 'push');
+          _updateStack('progress', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'progress');
           return const ProgressPage();
         },
@@ -118,7 +119,7 @@ class AppRouter {
         path: gpa,
         name: 'gpa',
         builder: (context, state) {
-          _updateStack('gpa', 'push');
+          _updateStack('gpa', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'gpa');
           return const GPAPage();
         },
@@ -129,7 +130,7 @@ class AppRouter {
         path: planning,
         name: 'planning',
         builder: (context, state) {
-          _updateStack('planning', 'push');
+          _updateStack('planning', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'planning');
           return const PlanningPage();
         },
@@ -140,7 +141,7 @@ class AppRouter {
         path: graduation,
         name: 'graduation',
         builder: (context, state) {
-          _updateStack('graduation', 'push');
+          _updateStack('graduation', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'graduation');
           return const GraduationPage();
         },
@@ -151,7 +152,7 @@ class AppRouter {
         path: settings,
         name: 'settings',
         builder: (context, state) {
-          _updateStack('settings', 'push');
+          _updateStack('settings', 'replace');
           _logNavigation('NAVIGATE', currentPage, 'settings');
           return const SettingsPage();
         },
@@ -244,6 +245,7 @@ class AppNavigation {
       context.pop();
     } else {
       AppRouter._logNavigation('GO_TO', AppRouter.currentPage, 'dashboard', params: {'reason': 'fallback'});
+      AppRouter._updateStack('dashboard', 'clear');
       context.go(AppRouter.dashboard);
     }
   }

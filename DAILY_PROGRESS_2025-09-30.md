@@ -47,3 +47,4 @@
 ## Ghi chú
 - Bộ lọc chọn môn đã loại trừ: môn đã chọn, nhóm đã đủ BB/TC tương ứng, và các môn đang học.
 - Tóm tắt theo nhóm nay gọn, không che nội dung chính; vẫn hỗ trợ thêm nhanh theo nhóm/loại.
+

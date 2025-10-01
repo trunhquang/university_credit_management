@@ -43,6 +43,7 @@ class ProgressChart extends StatelessWidget {
               Row(
                 children: [
                   // Circular Progress Chart
+                  SizedBox(width: 5,),
                   Expanded(
                     flex: 2,
                     child: SizedBox(
@@ -93,7 +94,7 @@ class ProgressChart extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 20),
+                  const SizedBox(width: 25),
                   // Progress Info
                   Expanded(
                     flex: 3,

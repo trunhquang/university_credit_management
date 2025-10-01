@@ -92,7 +92,7 @@ class PlanningService {
     String planId,
     Course course,
     Set<String> completedCourseIds, {
-    int creditLimit = defaultCreditLimit,
+    int? creditLimit, // Nếu null, sẽ sử dụng creditLimit của plan
   }) {
     final idx = plans.indexWhere((p) => p.id == planId);
     if (idx == -1) {
@@ -101,13 +101,14 @@ class PlanningService {
         willExceedLimit: false,
         missingPrerequisites: const [],
         currentCredits: 0,
-        limit: creditLimit,
+        limit: creditLimit ?? defaultCreditLimit,
       );
     }
     final plan = plans[idx];
     final current = plan.totalCredits;
+    final limit = creditLimit ?? plan.creditLimit;
 
-    final willExceed = (current + course.credits) > creditLimit;
+    final willExceed = (current + course.credits) > limit;
     final missing = course.prerequisiteCourses
         .where((id) => !completedCourseIds.contains(id))
         .toList();
@@ -119,7 +120,7 @@ class PlanningService {
       willExceedLimit: willExceed,
       missingPrerequisites: missing,
       currentCredits: current,
-      limit: creditLimit,
+      limit: limit,
     );
   }
 
@@ -156,6 +157,7 @@ class PlanningService {
     String planId, {
     String? note,
     String? schedule,
+    int? creditLimit,
   }) {
     final idx = plans.indexWhere((p) => p.id == planId);
     if (idx == -1) return plans;
@@ -167,6 +169,7 @@ class PlanningService {
       plannedCourses: old.plannedCourses,
       note: note ?? old.note,
       schedule: schedule ?? old.schedule,
+      creditLimit: creditLimit ?? old.creditLimit,
     );
     final newPlans = [...plans];
     newPlans[idx] = updated;

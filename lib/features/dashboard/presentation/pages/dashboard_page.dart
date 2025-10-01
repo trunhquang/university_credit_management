@@ -88,7 +88,7 @@ class _DashboardPageState extends State<DashboardPage> {
             onRefresh: () => provider.initializeCurriculum(),
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

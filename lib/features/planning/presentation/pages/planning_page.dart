@@ -6,6 +6,7 @@ import '../../../../core/models/course.dart';
 import '../../../planning/domain/models.dart';
 import '../../../planning/domain/planning_service.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/services/dialog_service.dart';
 
 class PlanningPage extends StatefulWidget {
   const PlanningPage({super.key});
@@ -44,91 +45,66 @@ class _PlanningPageState extends State<PlanningPage> {
     };
   }
 
-  Future<void> _pickAndAddCourse(SemesterPlan plan, CurriculumProvider provider) async {
+  /// Hiển thị dialog danh sách môn đang học của nhóm cụ thể
+  void _showInProgressCoursesDialog(
+      CurriculumProvider provider, String groupId, String groupName) {
+    // Lấy danh sách môn đang học của nhóm cụ thể
+    final inProgressCourses = <Course>[];
+
+    for (var section in provider.sections) {
+      for (var group in section.courseGroups) {
+        if (group.id == groupId) {
+          for (var course in group.courses) {
+            if (course.status == CourseStatus.inProgress) {
+              inProgressCourses.add(course);
+            }
+          }
+          break;
+        }
+      }
+    }
+
+    DialogService.showInProgressCoursesDialog(
+      context: context,
+      courses: inProgressCourses,
+      groupName: groupName,
+    );
+  }
+
+  Future<void> _pickAndAddCourse(
+      SemesterPlan plan, CurriculumProvider provider) async {
     final remaining = provider.getCoursesByStatus(CourseStatus.notStarted);
     if (remaining.isEmpty) {
       NotificationService.showSnack(context, 'Không còn môn phù hợp để thêm.');
       return;
     }
 
-    final selected = await showDialog<Course>(
-      context: context,
-      builder: (context) {
-        final plannedIds = plan.plannedCourses.map((e) => e.courseId).toSet();
-                                      final groupRemaining = _computeGroupRemaining(provider, plan);
-        final index = _buildCourseIndex(provider);
-        final courseToGroup = index['courseToGroup'] as Map<String, Map<String, Object>>;
-        final TextEditingController searchCtrl = TextEditingController();
-        String query = '';
-        List<Course> filterList() {
-          final q = query.trim().toLowerCase();
-          return remaining.where((c) {
-            if (plannedIds.contains(c.id)) return false;
-            final meta = courseToGroup[c.id];
-            if (meta != null) {
-              final groupId = meta['groupId'] as String;
-              final remain = groupRemaining[groupId] ?? {'req': 0, 'opt': 0};
-              if (c.type == CourseType.required) {
-                if ((remain['req'] ?? 0) <= 0) return false;
-              } else {
-                if ((remain['opt'] ?? 0) <= 0) return false;
-              }
-            }
-            if (q.isEmpty) return true;
-            return c.name.toLowerCase().contains(q) || c.id.toLowerCase().contains(q);
-          }).toList();
-        }
+    final plannedIds = plan.plannedCourses.map((e) => e.courseId).toSet();
+    final groupRemaining = _computeGroupRemaining(provider, plan);
+    final index = _buildCourseIndex(provider);
+    final courseToGroup =
+        index['courseToGroup'] as Map<String, Map<String, Object>>;
 
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final filtered = filterList();
-            return SimpleDialog(
-              title: const Text('Chọn môn để thêm'),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: TextField(
-                    controller: searchCtrl,
-                    decoration: const InputDecoration(
-                      hintText: 'Tìm kiếm theo tên hoặc mã môn',
-                      prefixIcon: Icon(Icons.search),
-                      isDense: true,
-                    ),
-                    onChanged: (v) => setState(() => query = v),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  width: 360,
-                  height: 480,
-                  child: ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, idx) {
-                      final c = filtered[idx];
-                      final meta = courseToGroup[c.id];
-                      final groupName = meta != null ? meta['groupName'] as String : '';
-                      final groupId = meta != null ? meta['groupId'] as String : '';
-                                                final remain = groupRemaining[groupId] ?? {'req': 0, 'opt': 0};
-                                                final reqRemain = remain['req'] ?? 0;
-                                                final optRemain = remain['opt'] ?? 0;
-                                                final typeText = c.type == CourseType.required ? 'BB' : 'TC';
-                      final subtitle = c.type == CourseType.required
-                          ? 'BB • Nhóm: $groupName • Còn cần BB: $reqRemain TC • TC còn: $optRemain'
-                          : 'TC • Nhóm: $groupName • TC còn: $optRemain';
-                      return ListTile(
-                        leading: Icon(c.type == CourseType.required ? Icons.checklist_rtl : Icons.list_alt_outlined),
-                        title: Text('${c.name} (${c.credits} TC)'),
-                        subtitle: Text(subtitle),
-                        trailing: Text(typeText),
-                        onTap: () => Navigator.pop(context, c),
-                      );
-                    },
-                  ),
-                )
-              ],
-            );
-          },
-        );
+    final selected = await DialogService.showAdvancedCourseSelectionDialog(
+      context: context,
+      title: 'Chọn môn để thêm',
+      courses: remaining,
+      searchHint: 'Tìm kiếm theo tên hoặc mã môn',
+      filterFunction: (courses) {
+        return courses.where((c) {
+          if (plannedIds.contains(c.id)) return false;
+          final meta = courseToGroup[c.id];
+          if (meta != null) {
+            final groupId = meta['groupId'] as String;
+            final remain = groupRemaining[groupId] ?? {'req': 0, 'opt': 0};
+            if (c.type == CourseType.required) {
+              if ((remain['req'] ?? 0) <= 0) return false;
+            } else {
+              if ((remain['opt'] ?? 0) <= 0) return false;
+            }
+          }
+          return true;
+        }).toList();
       },
     );
 
@@ -146,13 +122,15 @@ class _PlanningPageState extends State<PlanningPage> {
     );
 
     if (validation.willExceedLimit) {
-      NotificationService.showSnack(context, 'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
+      NotificationService.showSnack(context,
+          'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
       return;
     }
 
     if (validation.missingPrerequisites.isNotEmpty) {
       final missing = validation.missingPrerequisites.join(', ');
-      NotificationService.showSnack(context, 'Thiếu học phần tiên quyết: $missing');
+      NotificationService.showSnack(
+          context, 'Thiếu học phần tiên quyết: $missing');
     }
 
     setState(() {
@@ -171,11 +149,14 @@ class _PlanningPageState extends State<PlanningPage> {
     final allNotStarted = provider.getCoursesByStatus(CourseStatus.notStarted);
     // Filter by group and type
     final index = _buildCourseIndex(provider);
-    final courseToGroup = index['courseToGroup'] as Map<String, Map<String, Object>>;
+    final courseToGroup =
+        index['courseToGroup'] as Map<String, Map<String, Object>>;
     final plannedIds = plan.plannedCourses.map((e) => e.courseId).toSet();
     final groupRemain = _computeGroupRemaining(provider, plan);
     final targetRemain = groupRemain[groupId] ?? {'req': 0, 'opt': 0};
-    final needed = type == CourseType.required ? (targetRemain['req'] ?? 0) : (targetRemain['opt'] ?? 0);
+    final needed = type == CourseType.required
+        ? (targetRemain['req'] ?? 0)
+        : (targetRemain['opt'] ?? 0);
     if (needed <= 0) {
       NotificationService.showSnack(context, 'Nhóm đã đủ tín chỉ cho loại này');
       return;
@@ -194,30 +175,10 @@ class _PlanningPageState extends State<PlanningPage> {
       return;
     }
 
-    Course? selected = await showDialog<Course>(
+    Course? selected = await DialogService.showCourseSelectionDialog(
       context: context,
-      builder: (context) {
-        return SimpleDialog(
-          title: Text('Chọn môn (${type == CourseType.required ? 'BB' : 'TC'})'),
-          children: [
-            SizedBox(
-              width: 360,
-              height: 420,
-              child: ListView.builder(
-                itemCount: candidates.length,
-                itemBuilder: (context, idx) {
-                  final c = candidates[idx];
-                  return ListTile(
-                    leading: const Icon(Icons.add),
-                    title: Text('${c.name} (${c.credits} TC)'),
-                    onTap: () => Navigator.pop(context, c),
-                  );
-                },
-              ),
-            )
-          ],
-        );
-      },
+      title: 'Chọn môn (${type == CourseType.required ? 'BB' : 'TC'})',
+      courses: candidates,
     );
 
     if (selected == null) return;
@@ -233,12 +194,14 @@ class _PlanningPageState extends State<PlanningPage> {
       completed,
     );
     if (validation.willExceedLimit) {
-      NotificationService.showSnack(context, 'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
+      NotificationService.showSnack(context,
+          'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
       return;
     }
     if (validation.missingPrerequisites.isNotEmpty) {
       final missing = validation.missingPrerequisites.join(', ');
-      NotificationService.showSnack(context, 'Thiếu học phần tiên quyết: $missing');
+      NotificationService.showSnack(
+          context, 'Thiếu học phần tiên quyết: $missing');
     }
     setState(() {
       _plans = PlanningService().addCourse(_plans, plan.id, selected);
@@ -251,7 +214,8 @@ class _PlanningPageState extends State<PlanningPage> {
     SemesterPlan plan,
   ) {
     final index = _buildCourseIndex(provider);
-    final courseToGroup = index['courseToGroup'] as Map<String, Map<String, Object>>;
+    final courseToGroup =
+        index['courseToGroup'] as Map<String, Map<String, Object>>;
     final groupInfo = index['groupInfo'] as Map<String, Map<String, Object>>;
 
     final Map<String, int> requiredCompleted = {};
@@ -264,15 +228,19 @@ class _PlanningPageState extends State<PlanningPage> {
         for (final c in group.courses) {
           if (c.status == CourseStatus.completed) {
             if (c.type == CourseType.required) {
-              requiredCompleted[group.id] = (requiredCompleted[group.id] ?? 0) + c.credits;
+              requiredCompleted[group.id] =
+                  (requiredCompleted[group.id] ?? 0) + c.credits;
             } else {
-              optionalCompleted[group.id] = (optionalCompleted[group.id] ?? 0) + c.credits;
+              optionalCompleted[group.id] =
+                  (optionalCompleted[group.id] ?? 0) + c.credits;
             }
           } else if (c.status == CourseStatus.inProgress) {
             if (c.type == CourseType.required) {
-              requiredInProgress[group.id] = (requiredInProgress[group.id] ?? 0) + c.credits;
+              requiredInProgress[group.id] =
+                  (requiredInProgress[group.id] ?? 0) + c.credits;
             } else {
-              optionalInProgress[group.id] = (optionalInProgress[group.id] ?? 0) + c.credits;
+              optionalInProgress[group.id] =
+                  (optionalInProgress[group.id] ?? 0) + c.credits;
             }
           }
         }
@@ -288,9 +256,11 @@ class _PlanningPageState extends State<PlanningPage> {
         if (course != null) {
           if (course.type == CourseType.required) {
             // planned reduces remaining, but is not "in progress"
-            requiredCompleted[groupId] = (requiredCompleted[groupId] ?? 0) + pc.credits;
+            requiredCompleted[groupId] =
+                (requiredCompleted[groupId] ?? 0) + pc.credits;
           } else {
-            optionalCompleted[groupId] = (optionalCompleted[groupId] ?? 0) + pc.credits;
+            optionalCompleted[groupId] =
+                (optionalCompleted[groupId] ?? 0) + pc.credits;
           }
         }
       }
@@ -336,57 +306,26 @@ class _PlanningPageState extends State<PlanningPage> {
 
   void _addNewPlan() async {
     final now = DateTime.now();
-    final term = await showDialog<String>(
+    final result = await DialogService.showCreateSemesterDialog(
       context: context,
-      builder: (context) {
-        String selected = 'HK1';
-        int year = now.year;
-        return AlertDialog(
-          title: const Text('Tạo học kỳ mới'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<String>(
-                value: selected,
-                decoration: const InputDecoration(labelText: 'Học kỳ'),
-                items: const [
-                  DropdownMenuItem(value: 'HK1', child: Text('HK1')),
-                  DropdownMenuItem(value: 'HK2', child: Text('HK2')),
-                  DropdownMenuItem(value: 'Hè', child: Text('Hè')),
-                ],
-                onChanged: (v) => selected = v ?? 'HK1',
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                initialValue: year.toString(),
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Năm'),
-                onChanged: (v) {
-                  final n = int.tryParse(v);
-                  if (n != null) year = n;
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Hủy'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, '$selected-$year'),
-              child: const Text('Tạo'),
-            ),
-          ],
-        );
-      },
+      title: 'Tạo học kỳ mới',
+      initialYear: now.year,
     );
-    if (term == null) return;
+
+    if (result == null) return;
+
+    final term = '${result['term']}-${result['year']}';
+    final creditLimit = result['creditLimit'] as int? ?? 20;
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     setState(() {
       _plans = [
         ..._plans,
-        SemesterPlan(id: id, term: term.split('-').first, year: int.parse(term.split('-').last)),
+        SemesterPlan(
+          id: id,
+          term: term.split('-').first,
+          year: int.parse(term.split('-').last),
+          creditLimit: creditLimit,
+        ),
       ];
     });
     await _save();
@@ -459,19 +398,25 @@ class _PlanningPageState extends State<PlanningPage> {
                                   tooltip: 'Xóa học kỳ',
                                   icon: const Icon(Icons.delete_outline),
                                   onPressed: () async {
-                                    final confirm = await NotificationService.showConfirmDialog(
+                                    final confirm = await NotificationService
+                                        .showConfirmDialog(
                                       context,
                                       title: 'Xóa học kỳ',
-                                      message: 'Bạn có chắc muốn xóa học kỳ này? Hành động không thể hoàn tác.',
-                                      confirmColor: Theme.of(context).colorScheme.error,
+                                      message:
+                                          'Bạn có chắc muốn xóa học kỳ này? Hành động không thể hoàn tác.',
+                                      confirmColor:
+                                          Theme.of(context).colorScheme.error,
                                       confirmText: 'Xóa',
                                     );
                                     if (confirm == true) {
                                       setState(() {
-                                        _plans = _plans.where((p) => p.id != plan.id).toList();
+                                        _plans = _plans
+                                            .where((p) => p.id != plan.id)
+                                            .toList();
                                       });
                                       await _save();
-                                      NotificationService.showSnack(context, 'Đã xóa học kỳ');
+                                      NotificationService.showSnack(
+                                          context, 'Đã xóa học kỳ');
                                     }
                                   },
                                 ),
@@ -479,62 +424,21 @@ class _PlanningPageState extends State<PlanningPage> {
                                   tooltip: 'Chỉnh sửa ghi chú/lịch',
                                   icon: const Icon(Icons.edit_note_outlined),
                                   onPressed: () async {
-                                    final result = await showDialog<Map<String, String>>(
+                                    final result =
+                                        await DialogService.showEditInfoDialog(
                                       context: context,
-                                      builder: (context) {
-                                        final noteCtrl = TextEditingController(text: plan.note ?? '');
-                                        final scheduleCtrl = TextEditingController(text: plan.schedule ?? '');
-                                        return AlertDialog(
-                                          title: const Text('Ghi chú & Lịch học dự kiến'),
-                                          content: SizedBox(
-                                            width: 420,
-                                            child: SingleChildScrollView(
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  TextField(
-                                                    controller: noteCtrl,
-                                                    maxLines: 3,
-                                                    decoration: const InputDecoration(
-                                                      labelText: 'Ghi chú',
-                                                      alignLabelWithHint: true,
-                                                      border: OutlineInputBorder(),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 12),
-                                                  TextField(
-                                                    controller: scheduleCtrl,
-                                                    maxLines: 5,
-                                                    decoration: const InputDecoration(
-                                                      labelText: 'Lịch học (dạng văn bản)',
-                                                      alignLabelWithHint: true,
-                                                      hintText: 'Ví dụ: T2: Lập trình C (7-9); T4: CSDL (1-3)...',
-                                                      border: OutlineInputBorder(),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: const Text('Hủy'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () => Navigator.pop(context, {
-                                                'note': noteCtrl.text,
-                                                'schedule': scheduleCtrl.text,
-                                              }),
-                                              child: const Text('Lưu'),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                      title: 'Ghi chú & Lịch học dự kiến',
+                                      initialNote: plan.note,
+                                      initialSchedule: plan.schedule,
+                                      noteHint:
+                                          'Nhập ghi chú cho học kỳ này...',
+                                      scheduleHint:
+                                          'Ví dụ: T2: Lập trình C (7-9); T4: CSDL (1-3)...',
                                     );
                                     if (result != null) {
                                       setState(() {
-                                        _plans = PlanningService().updatePlanMeta(
+                                        _plans =
+                                            PlanningService().updatePlanMeta(
                                           _plans,
                                           plan.id,
                                           note: result['note'],
@@ -545,13 +449,46 @@ class _PlanningPageState extends State<PlanningPage> {
                                     }
                                   },
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text('${plan.totalCredits} TC'),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                          '${plan.totalCredits}/${plan.creditLimit} TC'),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      tooltip: 'Cấu hình giới hạn tín chỉ',
+                                      icon:
+                                          const Icon(Icons.settings, size: 18),
+                                      onPressed: () async {
+                                        final newLimit = await DialogService
+                                            .showCreditLimitDialog(
+                                          context: context,
+                                          title:
+                                              'Cấu hình giới hạn tín chỉ - ${plan.term} ${plan.year}',
+                                          currentLimit: plan.creditLimit,
+                                        );
+                                        if (newLimit != null &&
+                                            newLimit != plan.creditLimit) {
+                                          setState(() {
+                                            _plans = PlanningService()
+                                                .updatePlanMeta(
+                                              _plans,
+                                              plan.id,
+                                              creditLimit: newLimit,
+                                            );
+                                          });
+                                          await _save();
+                                        }
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -559,8 +496,12 @@ class _PlanningPageState extends State<PlanningPage> {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 ElevatedButton.icon(
-                                  onPressed: () => _pickAndAddCourse(plan, provider),
-                                  icon: const Icon(Icons.add, color: Colors.white,),
+                                  onPressed: () =>
+                                      _pickAndAddCourse(plan, provider),
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.white,
+                                  ),
                                   label: const Text('Thêm môn'),
                                 ),
                               ],
@@ -571,70 +512,135 @@ class _PlanningPageState extends State<PlanningPage> {
                             // Group summary: remaining BB/TC per group (collapsible)
                             Builder(
                               builder: (context) {
-                                final groupRemain = _computeGroupRemaining(provider, plan);
+                                final groupRemain =
+                                    _computeGroupRemaining(provider, plan);
                                 final List<Widget> rows = [];
                                 for (final s in provider.sections) {
                                   for (final g in s.courseGroups) {
-                                    final remain = groupRemain[g.id] ?? {'req': 0, 'opt': 0};
+                                    final remain = groupRemain[g.id] ??
+                                        {'req': 0, 'opt': 0};
                                     final reqR = remain['req'] ?? 0;
                                     final optR = remain['opt'] ?? 0;
-                                    final progTotal = (remain['progReq'] ?? 0) + (remain['progOpt'] ?? 0);
+                                    final progTotal = (remain['progReq'] ?? 0) +
+                                        (remain['progOpt'] ?? 0);
                                     // Show all groups, or only those with remaining > 0
                                     if (reqR > 0 || optR > 0) {
                                       rows.add(
                                         Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            Text(g.name, style: const TextStyle(fontWeight: FontWeight.w500)),
-                                            Row(
+                                            Text(g.name,
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.w500)),
+                                            Wrap(
+                                              spacing: 8,
+                                              runSpacing: 4,
                                               children: [
                                                 InkWell(
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                   onTap: reqR > 0
-                                                      ? () => _pickAndAddCourseForGroup(
+                                                      ? () =>
+                                                          _pickAndAddCourseForGroup(
                                                             plan,
                                                             provider,
                                                             groupId: g.id,
-                                                            type: CourseType.required,
+                                                            type: CourseType
+                                                                .required,
                                                           )
-                                                      : () => NotificationService.showSnack(context, 'Nhóm đã đủ BB'),
+                                                      : () => NotificationService
+                                                          .showSnack(context,
+                                                              'Nhóm đã đủ BB'),
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.blue.withOpacity(0.08),
-                                                      borderRadius: BorderRadius.circular(12),
+                                                      color: Colors.blue
+                                                          .withOpacity(0.08),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
                                                     ),
-                                                    child: Text('BB còn: $reqR'),
+                                                    child:
+                                                        Text('BB còn: $reqR'),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
                                                 InkWell(
-                                                  borderRadius: BorderRadius.circular(12),
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
                                                   onTap: optR > 0
-                                                      ? () => _pickAndAddCourseForGroup(
+                                                      ? () =>
+                                                          _pickAndAddCourseForGroup(
                                                             plan,
                                                             provider,
                                                             groupId: g.id,
-                                                            type: CourseType.optional,
+                                                            type: CourseType
+                                                                .optional,
                                                           )
-                                                      : () => NotificationService.showSnack(context, 'Nhóm đã đủ TC'),
+                                                      : () => NotificationService
+                                                          .showSnack(context,
+                                                              'Nhóm đã đủ TC'),
                                                   child: Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
                                                     decoration: BoxDecoration(
-                                                      color: Colors.green.withOpacity(0.08),
-                                                      borderRadius: BorderRadius.circular(12),
+                                                      color: Colors.green
+                                                          .withOpacity(0.08),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
                                                     ),
-                                                    child: Text('TC còn: $optR'),
+                                                    child:
+                                                        Text('TC còn: $optR'),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 8),
-                                                Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.orange.withOpacity(0.08),
-                                                    borderRadius: BorderRadius.circular(12),
+                                                GestureDetector(
+                                                  onTap: () =>
+                                                      _showInProgressCoursesDialog(
+                                                          provider,
+                                                          g.id,
+                                                          g.name),
+                                                  child: Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 8,
+                                                        vertical: 4),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.orange
+                                                          .withOpacity(0.08),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                      border: Border.all(
+                                                        color: Colors.orange
+                                                            .withOpacity(0.2),
+                                                        width: 1,
+                                                      ),
+                                                    ),
+                                                    child: Row(
+                                                      mainAxisSize:
+                                                          MainAxisSize.min,
+                                                      children: [
+                                                        Text(
+                                                            'Đang học: $progTotal TC'),
+                                                        const SizedBox(
+                                                            width: 4),
+                                                        Icon(
+                                                          Icons
+                                                              .arrow_forward_ios,
+                                                          size: 12,
+                                                          color: Colors
+                                                              .orange[700],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
-                                                  child: Text('Đang học: $progTotal TC'),
                                                 ),
                                               ],
                                             ),
@@ -645,7 +651,8 @@ class _PlanningPageState extends State<PlanningPage> {
                                     }
                                   }
                                 }
-                                if (rows.isEmpty) return const SizedBox.shrink();
+                                if (rows.isEmpty)
+                                  return const SizedBox.shrink();
                                 return Container(
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(8),
@@ -653,25 +660,46 @@ class _PlanningPageState extends State<PlanningPage> {
                                   decoration: BoxDecoration(
                                     color: Colors.grey[50],
                                     borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(color: Colors.grey[300]!),
+                                    border:
+                                        Border.all(color: Colors.grey[300]!),
                                   ),
                                   child: Theme(
                                     data: Theme.of(context).copyWith(
                                       dividerColor: Colors.transparent,
                                     ),
                                     child: ExpansionTile(
-                                      shape: const RoundedRectangleBorder(side: BorderSide(color: Colors.transparent)),
-                                      collapsedShape: const RoundedRectangleBorder(side: BorderSide(color: Colors.transparent)),
-                                      tilePadding: const EdgeInsets.symmetric(horizontal: 8),
-                                      title: const Text('Tóm tắt theo nhóm', style: TextStyle(fontWeight: FontWeight.w600)),
-                                      childrenPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      children: rows,
+                                      shape: const RoundedRectangleBorder(
+                                          side: BorderSide(
+                                              color: Colors.transparent)),
+                                      collapsedShape:
+                                          const RoundedRectangleBorder(
+                                              side: BorderSide(
+                                                  color: Colors.transparent)),
+                                      tilePadding: const EdgeInsets.symmetric(
+                                          horizontal: 8),
+                                      title: const Text('Tóm tắt theo nhóm',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w600)),
+                                      childrenPadding:
+                                          const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
+                                      children: [
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: rows,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
                               },
                             ),
-                            if ((plan.note?.isNotEmpty ?? false) || (plan.schedule?.isNotEmpty ?? false))
+                            if ((plan.note?.isNotEmpty ?? false) ||
+                                (plan.schedule?.isNotEmpty ?? false))
                               Container(
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
@@ -685,15 +713,20 @@ class _PlanningPageState extends State<PlanningPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     if (plan.note?.isNotEmpty ?? false) ...[
-                                      const Text('Ghi chú', style: TextStyle(fontWeight: FontWeight.w600)),
+                                      const Text('Ghi chú',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w600)),
                                       const SizedBox(height: 4),
                                       Text(plan.note!),
                                       const SizedBox(height: 8),
                                     ],
                                     if (plan.schedule?.isNotEmpty ?? false) ...[
-                                      const Text('Lịch học dự kiến', style: TextStyle(fontWeight: FontWeight.w600)),
+                                      const Text('Lịch học dự kiến',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w600)),
                                       const SizedBox(height: 4),
-                                      _ScheduleTimeline(text: plan.schedule!),
+                                      _ScheduleTimeline(
+                                          text: plan.schedule!),
                                     ],
                                   ],
                                 ),
@@ -701,10 +734,12 @@ class _PlanningPageState extends State<PlanningPage> {
                             if (plan.plannedCourses.isEmpty)
                               Row(
                                 children: [
-                                  Icon(Icons.info_outline, color: Colors.grey[600], size: 18),
+                                  Icon(Icons.info_outline,
+                                      color: Colors.grey[600], size: 18),
                                   const SizedBox(width: 8),
                                   const Expanded(
-                                    child: Text('Chưa có môn nào trong kế hoạch.'),
+                                    child:
+                                        Text('Chưa có môn nào trong kế hoạch.'),
                                   ),
                                 ],
                               )
@@ -713,32 +748,51 @@ class _PlanningPageState extends State<PlanningPage> {
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
                                 itemCount: plan.plannedCourses.length,
-                                separatorBuilder: (_, __) => const Divider(height: 1),
+                                separatorBuilder: (_, __) =>
+                                    const Divider(height: 1),
                                 itemBuilder: (context, i) {
                                   final pc = plan.plannedCourses[i];
-                                  final name = allCourses[pc.courseId] ?? pc.courseId;
+                                  final name =
+                                      allCourses[pc.courseId] ?? pc.courseId;
                                   final indexMaps = _buildCourseIndex(provider);
-                                  final courseToGroup = indexMaps['courseToGroup'] as Map<String, Map<String, Object>>;
+                                  final courseToGroup =
+                                      indexMaps['courseToGroup']
+                                          as Map<String, Map<String, Object>>;
                                   final meta = courseToGroup[pc.courseId];
-                                  final groupName = meta != null ? meta['groupName'] as String : '';
-                                  final groupId = meta != null ? meta['groupId'] as String : '';
-                                  final groupRemain = _computeGroupRemaining(provider, plan);
-                                  final remain = groupRemain[groupId] ?? {'req': 0, 'opt': 0, 'progReq': 0, 'progOpt': 0};
+                                  final groupName = meta != null
+                                      ? meta['groupName'] as String
+                                      : '';
+                                  final groupId = meta != null
+                                      ? meta['groupId'] as String
+                                      : '';
+                                  final groupRemain =
+                                      _computeGroupRemaining(provider, plan);
+                                  final remain = groupRemain[groupId] ??
+                                      {
+                                        'req': 0,
+                                        'opt': 0,
+                                        'progReq': 0,
+                                        'progOpt': 0
+                                      };
                                   final reqRemain = remain['req'] ?? 0;
                                   final optRemain = remain['opt'] ?? 0;
-                                  final progTotal = (remain['progReq'] ?? 0) + (remain['progOpt'] ?? 0);
+                                  final progTotal = (remain['progReq'] ?? 0) +
+                                      (remain['progOpt'] ?? 0);
                                   return ListTile(
                                     dense: true,
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 0),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 0),
                                     leading: const Icon(Icons.book_outlined),
                                     title: Text(name),
-                                    subtitle: Text('TC: ${pc.credits} • Nhóm: $groupName • BB còn: $reqRemain • TC còn: $optRemain • Đang học: $progTotal TC'),
+                                    subtitle: Text(
+                                        'TC: ${pc.credits} • Nhóm: $groupName • BB còn: $reqRemain • TC còn: $optRemain • Đang học: $progTotal TC'),
                                     trailing: IconButton(
                                       icon: const Icon(Icons.delete_outline),
                                       onPressed: () async {
                                         setState(() {
                                           _plans = PlanningService()
-                                              .removeCourse(_plans, plan.id, pc.courseId);
+                                              .removeCourse(
+                                                  _plans, plan.id, pc.courseId);
                                         });
                                         await _save();
                                       },
@@ -752,7 +806,10 @@ class _PlanningPageState extends State<PlanningPage> {
                             Builder(
                               builder: (context) {
                                 final providerStats = provider.progressModel;
-                                final remainingAfter = (providerStats.totalCredits - providerStats.completedCredits) - plan.totalCredits;
+                                final remainingAfter =
+                                    (providerStats.totalCredits -
+                                            providerStats.completedCredits) -
+                                        plan.totalCredits;
                                 if (remainingAfter > 20) {
                                   return Container(
                                     padding: const EdgeInsets.all(10),
@@ -763,12 +820,14 @@ class _PlanningPageState extends State<PlanningPage> {
                                     ),
                                     child: Row(
                                       children: [
-                                        const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                                        const Icon(Icons.warning_amber_rounded,
+                                            color: Colors.orange),
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
                                             'Cảnh báo: Sau học kỳ này còn khoảng $remainingAfter tín chỉ. Cân nhắc tăng tín chỉ/kế hoạch.',
-                                            style: const TextStyle(color: Colors.orange),
+                                            style: const TextStyle(
+                                                color: Colors.orange),
                                           ),
                                         ),
                                       ],
@@ -794,7 +853,8 @@ class _PlanningPageState extends State<PlanningPage> {
                                     .toSet();
                                 final suggestions = PlanningService()
                                     .suggestNextCourses(allCourses, completed);
-                                if (suggestions.isEmpty) return const SizedBox.shrink();
+                                if (suggestions.isEmpty)
+                                  return const SizedBox.shrink();
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -804,26 +864,34 @@ class _PlanningPageState extends State<PlanningPage> {
                                     Wrap(
                                       spacing: 8,
                                       runSpacing: 8,
-                                      crossAxisAlignment: WrapCrossAlignment.center,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
                                       children: [
-
                                         ...suggestions.take(4).map((c) {
                                           return ActionChip(
-                                            avatar: const Icon(Icons.add, size: 16),
-                                            label: Text('${c.name} (${c.credits} TC)'),
+                                            avatar:
+                                                const Icon(Icons.add, size: 16),
+                                            label: Text(
+                                                '${c.name} (${c.credits} TC)'),
                                             onPressed: () async {
-                                              final validation = PlanningService().validateAddCourse(
+                                              final validation =
+                                                  PlanningService()
+                                                      .validateAddCourse(
                                                 _plans,
                                                 plan.id,
                                                 c,
                                                 completed,
                                               );
                                               if (validation.willExceedLimit) {
-                                                NotificationService.showSnack(context, 'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
+                                                NotificationService.showSnack(
+                                                    context,
+                                                    'Vượt giới hạn tín chỉ (${validation.currentCredits}/${validation.limit}).');
                                                 return;
                                               }
                                               setState(() {
-                                                _plans = PlanningService().addCourse(_plans, plan.id, c);
+                                                _plans = PlanningService()
+                                                    .addCourse(
+                                                        _plans, plan.id, c);
                                               });
                                               await _save();
                                             },
@@ -835,7 +903,6 @@ class _PlanningPageState extends State<PlanningPage> {
                                 );
                               },
                             ),
-
                           ],
                         ),
                       ),
@@ -850,6 +917,7 @@ class _PlanningPageState extends State<PlanningPage> {
 
 class _ScheduleTimeline extends StatelessWidget {
   final String text;
+
   const _ScheduleTimeline({required this.text});
 
   @override
@@ -869,6 +937,7 @@ class _ScheduleTimeline extends StatelessWidget {
 
     return ListView.separated(
       shrinkWrap: true,
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: items.length,
       separatorBuilder: (_, __) => const Divider(height: 1),
