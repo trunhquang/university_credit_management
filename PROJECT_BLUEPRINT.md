@@ -16,7 +16,7 @@
 
 ---
 
-## 🚀 BLUEPRINT 3 GIAI ĐOẠN
+## 🚀 BLUEPRINT 4 GIAI ĐOẠN
 
 ---
 
@@ -129,44 +129,134 @@
 
 ---
 
-## 🌟 GIAI ĐOẠN 3: ENHANCEMENT & POLISH (4-6 tuần)
-*Mục tiêu: Hoàn thiện ứng dụng và chuẩn bị phát hành*
+## 🌟 GIAI ĐOẠN 3: LỊCH HỌC & NHẮC NHỞ (3-4 tuần)
+*Mục tiêu: Bổ sung lịch thi/lịch học cho môn, nhắc nhở cục bộ, link học online*
 
 ### 🎯 Mục tiêu chính
-- Tối ưu hiệu suất và ổn định
-- Thêm tính năng nâng cao
-- Chuẩn bị phát hành
+- Lịch thi/lịch học trong mỗi `Course`
+- Local push notifications nhắc lịch
+- Link học online (Zoom/Meet) + mở app + chia sẻ
 
 ### 📋 Tính năng cần phát triển
 
-#### 3.1 **Tính năng nâng cao**
+#### 3.1 **Lịch học & lịch thi trong Course**
+- [ ] Thêm trường `classSchedules[]` và `examSchedules[]` cho `Course`
+- [ ] UI nhập/sửa/xóa lịch (ngày, giờ, địa điểm/online)
+- [ ] Hiển thị lịch sắp tới trên Course Detail và Planning
+
+#### 3.2 **Local notifications**
+- [ ] Nhắc nhở trước giờ học/thi (config phút trước)
+- [ ] Bật/tắt theo từng lịch, theo từng Course
+- [ ] Cho phép snooze/cancel
+
+#### 3.3 **Link học online**
+- [ ] Trường `onlineLink` trong `Course`
+- [ ] Mở link qua app (Zoom/Meet) bằng `url_launcher`
+- [ ] Chia sẻ link qua ShareSheet
+
+### 🛠️ Công nghệ
+- `flutter_local_notifications`, `timezone`
+- `url_launcher`, `share_plus`
+
+### 📊 Deliverables
+- [ ] Course Detail có lịch học/thi + link online
+- [ ] Notifications hoạt động nền tảng iOS/Android
+- [ ] UI quản lý lịch trong Planning
+
+### 📊 Deliverables
+- [ ] Ứng dụng hoàn chỉnh và ổn định
+- [ ] Test coverage > 80%
+- [ ] Performance optimization
+- [ ] App store ready
+- [ ] Documentation đầy đủ
+
+---
+
+## 🌟 GIAI ĐOẠN 4: MULTI-PROGRAM & EDITOR (3-4 tuần)
+*Mục tiêu: Một user có thể học nhiều chuyên ngành; CRUD Section/CourseGroup/Course*
+
+### 🎯 Mục tiêu chính
+- Hỗ trợ nhiều `Program` (chuyên ngành/chương trình)
+- CRUD cấu trúc chương trình: `Section`, `CourseGroup`, `Course`
+
+### 📋 Tính năng cần phát triển
+
+#### 4.1 **Multi-Program**
+- [ ] Model `Program` (id, name, totalCredits, outcomes)
+- [ ] Cho phép chọn/chuyển `Program` đang hoạt động
+- [ ] Lưu dữ liệu riêng theo `Program`
+
+#### 4.2 **Curriculum Editor**
+- [ ] Thêm/Sửa/Xóa `Section`
+- [ ] Thêm/Sửa/Xóa `CourseGroup`
+- [ ] Thêm/Sửa/Xóa `Course`
+- [ ] Ràng buộc: tổng tín chỉ, tiên quyết, loại môn
+
+### 🛠️ Công nghệ
+- Reusable forms, validation
+- Export/Import JSON để chia sẻ curriculum
+
+### 📊 Deliverables
+- [ ] Quản lý nhiều chương trình
+- [ ] Trình chỉnh sửa curriculum đầy đủ
+
+---
+
+## 🌟 GIAI ĐOẠN 5: CHUẨN BỊ PHÁT HÀNH V1 (2-3 tuần)
+*Mục tiêu: Sẵn sàng phát hành v1 lên App Store/Google Play*
+
+### 🎯 Mục tiêu chính
+- Thiết lập auto test (unit/integration cơ bản)
+- Chuẩn bị icon, splash, screenshots, metadata
+- Thiết lập CI/CD build & signing, beta distribution (TestFlight/Play Console)
+- Tối thiểu hóa crash/ANR, bật Crashlytics/Analytics
+
+### 📋 Hạng mục công việc
+- [ ] Unit tests & widget/integration tests cho flows chính
+- [ ] App icon, splash, screenshots đa nền tảng
+- [ ] App Store/Play metadata: mô tả, từ khóa, privacy, age rating
+- [ ] CI/CD: build, code signing, upload (GitHub Actions)
+- [ ] Thiết lập Firebase Crashlytics/Analytics (tối thiểu)
+- [ ] Release checklist: versioning, changelog, QA smoke tests
+
+### 📊 Deliverables
+- [ ] Bản build v1 sẵn sàng submit store
+- [ ] Test cơ bản pass, CI/CD chạy ổn định
+- [ ] Tài liệu phát hành (release notes, hướng dẫn)
+
+---
+
+## 🌟 GIAI ĐOẠN 6: NÂNG CAO (V2)
+*Mục tiêu: Tập trung các tính năng nâng cao, sẽ phát hành ở v2*
+
+### 6.1 **Tính năng nâng cao**
 - [ ] Export/Import dữ liệu (JSON, CSV)
 - [ ] Backup và restore dữ liệu
 - [ ] Chia sẻ tiến độ học tập
 - [ ] Tích hợp lịch học từ hệ thống trường
 - [ ] Thống kê chi tiết và báo cáo
 
-#### 3.2 **Tối ưu hiệu suất**
+### 6.2 **Tối ưu hiệu suất**
 - [ ] Lazy loading cho danh sách môn học
 - [ ] Caching dữ liệu thông minh
 - [ ] Tối ưu memory usage
 - [ ] Fast startup time
 - [ ] Smooth scrolling và animations
 
-#### 3.3 **Tính năng xã hội**
+### 6.3 **Tính năng xã hội**
 - [ ] So sánh tiến độ với bạn bè (nếu có)
 - [ ] Chia sẻ thành tích học tập
 - [ ] Community features (nếu cần)
 - [ ] Feedback và rating system
 
-#### 3.4 **Chuẩn bị phát hành**
-- [ ] Unit tests và integration tests
+### 6.4 **Chuẩn bị phát hành v2**
+- [ ] Unit tests và integration tests mở rộng
 - [ ] Performance testing
 - [ ] Security audit
 - [ ] App store optimization
 - [ ] Documentation và user guide
 
-#### 3.5 **Tính năng bổ sung**
+### 6.5 **Tính năng bổ sung**
 - [ ] Offline mode hoàn toàn
 - [ ] Multi-language support
 - [ ] Accessibility improvements
@@ -179,13 +269,6 @@
 - **Analytics**: Firebase Analytics
 - **Crash Reporting**: Firebase Crashlytics
 - **Performance**: Firebase Performance
-
-### 📊 Deliverables
-- [ ] Ứng dụng hoàn chỉnh và ổn định
-- [ ] Test coverage > 80%
-- [ ] Performance optimization
-- [ ] App store ready
-- [ ] Documentation đầy đủ
 
 ---
 
@@ -203,10 +286,25 @@ Giai đoạn 2: Advanced Features [6-8 tuần]
 ├── Tuần 5-6: Dashboard nâng cao + Checklist
 └── Tuần 7-8: Tối ưu giao diện + Testing
 
-Giai đoạn 3: Enhancement       [4-6 tuần]
-├── Tuần 1-2: Tính năng nâng cao
-├── Tuần 3-4: Tối ưu hiệu suất
-└── Tuần 5-6: Chuẩn bị phát hành
+Giai đoạn 3: Lịch học & Nhắc nhở [3-4 tuần]
+├── Tuần 1: Course schedules + UI nhập
+├── Tuần 2: Notifications + timezone
+└── Tuần 3-4: Link online + tích hợp Planning
+
+Giai đoạn 4: Multi-Program & Editor [3-4 tuần]
+├── Tuần 1: Model Program + switcher
+├── Tuần 2: CRUD Section/CourseGroup
+└── Tuần 3-4: CRUD Course + validation + export/import
+
+Giai đoạn 5: Chuẩn bị phát hành v1 [2-3 tuần]
+├── Tuần 1: Auto tests + icon/splash + metadata
+├── Tuần 2: CI/CD + Crashlytics/Analytics
+└── Tuần 3: QA smoke + submit build (tuỳ tiến độ)
+
+Giai đoạn 6: Nâng cao (v2) [4-8 tuần]
+├── Tuần 1-2: Advanced features (export/import, backup)
+├── Tuần 3-4: Hiệu năng + xã hội + báo cáo
+└── Tuần 5-8: Hoàn thiện & phát hành v2 (tuỳ phạm vi)
 ```
 
 **Tổng thời gian: 14-20 tuần (3.5-5 tháng)**
@@ -226,9 +324,9 @@ Giai đoạn 3: Enhancement       [4-6 tuần]
 - [ ] Giao diện đẹp và responsive
 
 ### Giai đoạn 3:
-- [ ] Performance tốt (< 2s startup)
-- [ ] Test coverage > 80%
-- [ ] Sẵn sàng phát hành app store
+- [ ] Course schedules & notifications hoạt động ổn định
+- [ ] Mở link online tốt trên iOS/Android
+- [ ] UX lịch mượt và dễ dùng
 
 ---
 
