@@ -9,6 +9,10 @@ plugins {
 android {
     namespace = "com.example.university_credit_manager"
     compileSdk = flutter.compileSdkVersion
+    
+    buildFeatures {
+        buildConfig true
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -51,14 +55,17 @@ android {
             ndk {
                 debugSymbolLevel 'SYMBOL_TABLE'
             }
+            
+            // Disable Vulkan validation layer to avoid 16KB alignment issues
+            buildConfigField "boolean", "ENABLE_VULKAN_VALIDATION", "false"
         }
     }
     
-    // Packaging options for 16KB page size support
-    packagingOptions {
-        pickFirst '**/libc++_shared.so'
-        pickFirst '**/libjsc.so'
-        pickFirst '**/libflutter.so'
+    // Packaging config for mmapable native libs and 16KB alignment
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
     
 }

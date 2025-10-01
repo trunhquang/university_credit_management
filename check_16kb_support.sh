@@ -1,129 +1,154 @@
 #!/bin/bash
 
-# Comprehensive 16KB Page Size Support Checker
-# This script analyzes your APK to verify 16KB page size support
+# Comprehensive 16KB Page Size Support Checker (APK or AAB)
+# - For APK: uses aapt to read manifest and ABIs
+# - For AAB: inspects bundle structure (base/lib/**) without aapt
 
 echo "=== 16KB Page Size Support Analysis ==="
 echo "Date: $(date)"
 echo ""
 
-APK_PATH="build/app/outputs/flutter-apk/app-release.apk"
+APK_PATH="${1:-android/app/release/app-release.aab}"
 
 if [ ! -f "$APK_PATH" ]; then
-    echo "❌ APK not found at $APK_PATH"
-    echo "Please build the APK first: flutter build apk --target-platform android-arm64"
-    exit 1
+  echo "❌ File not found at $APK_PATH"
+  echo "Usage: $0 <path-to-apk-or-aab>"
+  exit 1
 fi
 
-echo "📱 Analyzing APK: $APK_PATH"
+echo "📱 Analyzing: $APK_PATH"
 echo ""
 
-# Check APK basic info
-echo "1. APK Basic Information:"
-echo "   Size: $(ls -lh $APK_PATH | awk '{print $5}')"
+# 1) Basic info
+echo "1. Artifact Information:"
+echo "   Size: $(ls -lh "$APK_PATH" | awk '{print $5}')"
+EXT="${APK_PATH##*.}"
+echo "   Type: .$EXT"
 echo ""
 
-# Check target SDK version
-echo "2. Target SDK Version:"
-TARGET_SDK=$($ANDROID_HOME/build-tools/34.0.0/aapt dump badging "$APK_PATH" | grep targetSdkVersion | sed "s/.*targetSdkVersion:'\([^']*\)'.*/\1/")
-MIN_SDK=$($ANDROID_HOME/build-tools/34.0.0/aapt dump badging "$APK_PATH" | grep sdkVersion | sed "s/.*sdkVersion:'\([^']*\)'.*/\1/")
+# Utility: safe aapt dump
+safe_aapt_dump() {
+  "$ANDROID_HOME"/build-tools/34.0.0/aapt dump badging "$APK_PATH" 2>/dev/null || true
+}
 
-echo "   Min SDK: $MIN_SDK"
-echo "   Target SDK: $TARGET_SDK"
+TARGET_SDK=""
+MIN_SDK=""
+ABIS=""
 
-if [ "$TARGET_SDK" -ge 35 ]; then
+# 2) SDK and ABI detection
+if [ "$EXT" = "apk" ]; then
+  echo "2. Target SDK Version:"
+  BADGING="$(safe_aapt_dump)"
+  TARGET_SDK=$(echo "$BADGING" | grep targetSdkVersion | sed "s/.*targetSdkVersion:'\([^']*\)'.*/\1/")
+  MIN_SDK=$(echo "$BADGING" | grep sdkVersion | sed "s/.*sdkVersion:'\([^']*\)'.*/\1/")
+  echo "   Min SDK: ${MIN_SDK:-unknown}"
+  echo "   Target SDK: ${TARGET_SDK:-unknown}"
+  if [ -n "$TARGET_SDK" ] && [ "$TARGET_SDK" -ge 35 ] 2>/dev/null; then
     echo "   ✅ Target SDK 35+ (Android 15+) - 16KB page size support required"
-else
-    echo "   ⚠️  Target SDK < 35 - 16KB page size support not required yet"
-fi
-echo ""
+  else
+    echo "   ℹ️  Target SDK < 35 or unknown"
+  fi
+  echo ""
 
-# Check native code support
-echo "3. Native Code Support:"
-NATIVE_CODE=$($ANDROID_HOME/build-tools/34.0.0/aapt dump badging "$APK_PATH" | grep native-code | sed "s/.*native-code: '\([^']*\)'.*/\1/")
-echo "   Architectures: $NATIVE_CODE"
-
-if [[ "$NATIVE_CODE" == *"arm64-v8a"* ]]; then
+  echo "3. Native Code Support:"
+  ABIS=$(echo "$BADGING" | grep native-code | sed "s/.*native-code: '\([^']*\)'.*/\1/")
+  echo "   Architectures: ${ABIS:-unknown}"
+  if echo "$ABIS" | grep -q "arm64-v8a"; then
     echo "   ✅ ARM64 support (primary architecture for 16KB pages)"
-else
+  else
     echo "   ⚠️  No ARM64 support detected"
-fi
-echo ""
+  fi
+  echo ""
+else
+  echo "2. Target SDK Version:"
+  echo "   ℹ️  Skipped (AAB manifest is binary; use Play Console or bundletool for exact values)"
+  echo ""
 
-# Check native libraries
+  echo "3. Native Code Support:"
+  # For AAB, list ABIs by inspecting base/lib/*
+  TEMP_DIR=$(mktemp -d)
+  unzip -q "$APK_PATH" -d "$TEMP_DIR" 2>/dev/null || true
+  if [ -d "$TEMP_DIR/base/lib" ]; then
+    ABIS=$(ls -1 "$TEMP_DIR/base/lib" 2>/dev/null | tr '\n' ' ' | sed 's/ $//')
+  elif [ -d "$TEMP_DIR/lib" ]; then
+    ABIS=$(ls -1 "$TEMP_DIR/lib" 2>/dev/null | tr '\n' ' ' | sed 's/ $//')
+  fi
+  echo "   Architectures: ${ABIS:-none}"
+  if echo "$ABIS" | grep -q "arm64-v8a"; then
+    echo "   ✅ ARM64 support (primary architecture for 16KB pages)"
+  else
+    echo "   ⚠️  No ARM64 support detected"
+  fi
+  echo ""
+fi
+
+# 4) Native libraries inventory
 echo "4. Native Libraries Analysis:"
-echo "   Extracting APK contents..."
+echo "   Extracting contents..."
+TMP=$(mktemp -d)
+unzip -q "$APK_PATH" -d "$TMP" 2>/dev/null || true
+LIB_ROOT=""
+if [ -d "$TMP/lib" ]; then
+  LIB_ROOT="$TMP/lib"
+elif [ -d "$TMP/base/lib" ]; then
+  LIB_ROOT="$TMP/base/lib"
+fi
 
-# Create temporary directory for analysis
-TEMP_DIR=$(mktemp -d)
-cd "$TEMP_DIR"
-unzip -q "$OLDPWD/$APK_PATH" 2>/dev/null
-
-echo "   Native libraries found:"
-find lib -name "*.so" 2>/dev/null | while read -r lib; do
-    if [ -f "$lib" ]; then
-        size=$(ls -lh "$lib" | awk '{print $5}')
-        arch=$(echo "$lib" | cut -d'/' -f2)
-        echo "     - $(basename "$lib") ($arch) - $size"
-    fi
-done
-
-# Check for Flutter engine
-if [ -f "lib/arm64-v8a/libflutter.so" ]; then
+if [ -n "$LIB_ROOT" ]; then
+  echo "   Native libraries found:"
+  find "$LIB_ROOT" -name "*.so" 2>/dev/null | while read -r so; do
+    size=$(ls -lh "$so" | awk '{print $5}')
+    arch=$(echo "$so" | awk -F "/" '{for(i=1;i<=NF;i++){if($i=="lib"){print $(i+1);break}}}')
+    echo "     - $(basename "$so") ($arch) - $size"
+  done
+  if [ -f "$LIB_ROOT/arm64-v8a/libflutter.so" ]; then
     echo "   ✅ Flutter engine library found (ARM64)"
-else
-    echo "   ⚠️  Flutter engine library not found"
-fi
-
-# Check for app-specific native code
-if [ -f "lib/arm64-v8a/libapp.so" ]; then
+  else
+    echo "   ⚠️  Flutter engine library not found (ARM64)"
+  fi
+  if [ -f "$LIB_ROOT/arm64-v8a/libapp.so" ]; then
     echo "   ✅ App-specific native code found (ARM64)"
+  else
+    echo "   ℹ️  No app-specific native code detected (ARM64)"
+  fi
 else
-    echo "   ℹ️  No app-specific native code detected"
+  echo "   ℹ️  No lib/ directory found in artifact"
 fi
 
-# Cleanup
-cd "$OLDPWD"
-rm -rf "$TEMP_DIR"
+# 5) Build configuration hints (from Gradle files)
 echo ""
-
-# Check build configuration
 echo "5. Build Configuration Check:"
 if grep -q "abiFilters.*arm64-v8a" android/app/build.gradle; then
-    echo "   ✅ ARM64 ABI filter configured"
+  echo "   ✅ ARM64 ABI filter configured"
 else
-    echo "   ⚠️  ARM64 ABI filter not found in build.gradle"
+  echo "   ⚠️  ARM64 ABI filter not found in build.gradle"
+fi
+# User migrated to `packaging { jniLibs { useLegacyPackaging = false } }`
+if grep -q "packaging[[:space:]]*{[[:space:]]*jniLibs" android/app/build.gradle; then
+  echo "   ✅ Packaging (jniLibs/useLegacyPackaging=false) configured"
+else
+  echo "   ⚠️  Packaging (jniLibs) not configured"
 fi
 
-if grep -q "packagingOptions" android/app/build.gradle; then
-    echo "   ✅ Packaging options configured"
-else
-    echo "   ⚠️  Packaging options not configured"
-fi
+# 6) Final assessment
 echo ""
-
-# Final assessment
 echo "6. 16KB Page Size Support Assessment:"
-echo ""
+HAS_ARM64="false"
+if echo "$ABIS" | grep -q "arm64-v8a"; then HAS_ARM64="true"; fi
 
-if [ "$TARGET_SDK" -ge 35 ] && [[ "$NATIVE_CODE" == *"arm64-v8a"* ]]; then
-    echo "   ✅ APK appears to support 16KB page sizes"
-    echo "   ✅ Target SDK 35+ with ARM64 native libraries"
-    echo "   ✅ Ready for Google Play Store requirements (Nov 1, 2025)"
+if [ "$HAS_ARM64" = "true" ]; then
+  echo "   ✅ Artifact includes ARM64 libraries (required for 16KB devices)"
 else
-    echo "   ⚠️  APK may not fully support 16KB page sizes"
-    if [ "$TARGET_SDK" -lt 35 ]; then
-        echo "   ⚠️  Target SDK < 35 (not required yet)"
-    fi
-    if [[ "$NATIVE_CODE" != *"arm64-v8a"* ]]; then
-        echo "   ⚠️  Missing ARM64 support"
-    fi
+  echo "   ⚠️  Missing ARM64 libraries"
 fi
 
 echo ""
 echo "7. Recommendations:"
-echo "   - Test on devices with 16KB page sizes when available"
-echo "   - Monitor app performance on Android 15+ devices"
-echo "   - Keep dependencies updated for 16KB page size compatibility"
+echo "   - Use release builds for Play submission (debug may include validation layers)"
+echo "   - Test on devices/emulators with 16KB page sizes when available"
+echo "   - Keep plugins/SDKs updated for 16KB compatibility"
+
 echo ""
+rm -rf "$TMP" "$TEMP_DIR" 2>/dev/null || true
 echo "=== Analysis Complete ==="
+
