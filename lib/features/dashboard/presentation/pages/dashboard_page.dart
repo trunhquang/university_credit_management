@@ -7,6 +7,9 @@ import '../widgets/progress_chart.dart';
 import '../widgets/section_summary.dart';
 import '../widgets/gpa_display.dart';
 import '../widgets/quick_stats.dart';
+import '../widgets/gpa_timeline.dart';
+import '../widgets/upcoming_courses.dart';
+import '../widgets/notifications_banner.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -92,6 +95,9 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Notifications
+                  const NotificationsBanner(),
+                  const SizedBox(height: 16),
                   // Progress Chart
                   const ProgressChart(),
                   const SizedBox(height: 24),
@@ -104,8 +110,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   const GPADisplay(),
                   const SizedBox(height: 24),
 
+                  // GPA Timeline
+                  const GpaTimeline(),
+                  const SizedBox(height: 24),
+
                   // Section Summary
                   const SectionSummary(),
+                  const SizedBox(height: 24),
+
+                  // Upcoming Courses
+                  const UpcomingCourses(),
                   const SizedBox(height: 24),
 
                   // Action Buttons

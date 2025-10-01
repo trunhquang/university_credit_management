@@ -61,7 +61,7 @@ class QuickStats extends StatelessWidget {
     String subtitle,
   ) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -79,7 +79,7 @@ class QuickStats extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -87,14 +87,14 @@ class QuickStats extends StatelessWidget {
                 child: Icon(
                   icon,
                   color: color,
-                  size: 20,
+                  size: 22,
                 ),
               ),
               const Spacer(),
               Text(
                 value,
                 style: const TextStyle(
-                  fontSize: 24,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
               ),

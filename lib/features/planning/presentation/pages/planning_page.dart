@@ -129,8 +129,16 @@ class _PlanningPageState extends State<PlanningPage> {
 
     if (validation.missingPrerequisites.isNotEmpty) {
       final missing = validation.missingPrerequisites.join(', ');
-      NotificationService.showSnack(
-          context, 'Thiếu học phần tiên quyết: $missing');
+      final proceed = await DialogService.showConfirmationDialog(
+        context: context,
+        title: 'Thiếu tiên quyết',
+        content:
+            'Môn này thiếu học phần tiên quyết: $missing. Bạn vẫn muốn thêm?',
+        confirmText: 'Vẫn thêm',
+        cancelText: 'Hủy',
+        confirmColor: Colors.orange,
+      );
+      if (!proceed) return;
     }
 
     setState(() {
@@ -200,8 +208,16 @@ class _PlanningPageState extends State<PlanningPage> {
     }
     if (validation.missingPrerequisites.isNotEmpty) {
       final missing = validation.missingPrerequisites.join(', ');
-      NotificationService.showSnack(
-          context, 'Thiếu học phần tiên quyết: $missing');
+      final proceed = await DialogService.showConfirmationDialog(
+        context: context,
+        title: 'Thiếu tiên quyết',
+        content:
+            'Môn này thiếu học phần tiên quyết: $missing. Bạn vẫn muốn thêm?',
+        confirmText: 'Vẫn thêm',
+        cancelText: 'Hủy',
+        confirmColor: Colors.orange,
+      );
+      if (!proceed) return;
     }
     setState(() {
       _plans = PlanningService().addCourse(_plans, plan.id, selected);

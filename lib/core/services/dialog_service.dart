@@ -484,6 +484,52 @@ class DialogService {
     );
   }
 
+  /// Hiển thị dialog nhập tiêu đề và ghi chú (dùng cho checklist tốt nghiệp, v.v.)
+  static Future<Map<String, String>?> showAddTextWithNoteDialog({
+    required BuildContext context,
+    String title = 'Thêm mục',
+    String titleLabel = 'Nội dung',
+    String noteLabel = 'Ghi chú (tuỳ chọn)',
+    String confirmText = 'Thêm',
+    String cancelText = 'Hủy',
+  }) {
+    final TextEditingController titleCtrl = TextEditingController();
+    final TextEditingController noteCtrl = TextEditingController();
+    return showDialog<Map<String, String>?>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleCtrl,
+              decoration: InputDecoration(labelText: titleLabel),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: noteCtrl,
+              decoration: InputDecoration(labelText: noteLabel),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: Text(cancelText),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop({
+              'title': titleCtrl.text,
+              'note': noteCtrl.text,
+            }),
+            child: Text(confirmText),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Hiển thị dialog cấu hình giới hạn tín chỉ
   static Future<int?> showCreditLimitDialog({
     required BuildContext context,

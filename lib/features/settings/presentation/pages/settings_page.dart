@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/state/curriculum_provider.dart';
 import '../../../../core/navigation/app_router.dart';
 import '../../../../core/services/notification_service.dart';
+import '../../../../core/state/theme_provider.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -31,6 +32,36 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Appearance
+          _buildSectionHeader('Giao diện'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                children: [
+                  const Icon(Icons.color_lens_outlined),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text('Chế độ giao diện'),
+                  ),
+                  Consumer<ThemeProvider>(
+                    builder: (context, theme, _) => DropdownButton<ThemeMode>(
+                      value: theme.mode,
+                      onChanged: (mode) {
+                        if (mode != null) context.read<ThemeProvider>().setMode(mode);
+                      },
+                      items: const [
+                        DropdownMenuItem(value: ThemeMode.system, child: Text('Theo hệ thống')),
+                        DropdownMenuItem(value: ThemeMode.light, child: Text('Sáng')),
+                        DropdownMenuItem(value: ThemeMode.dark, child: Text('Tối')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           // Data Management Section
           _buildSectionHeader('Quản lý dữ liệu'),
           _buildSettingsTile(
