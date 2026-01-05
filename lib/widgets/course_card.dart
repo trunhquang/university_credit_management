@@ -36,7 +36,7 @@ class CourseCard extends StatelessWidget {
             labelText: languageManager.currentStrings.score,
             border: const OutlineInputBorder(),
           ),
-          keyboardType: TextInputType.number,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
         ),
         actions: [
           TextButton(
@@ -45,7 +45,8 @@ class CourseCard extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () {
-              final score = double.tryParse(scoreController.text);
+              var text = scoreController.text.replaceAll(',', '.');
+              final score = double.tryParse(text);
               if (score != null) {
                 course.setScore(score);
                 onScoreChanged?.call(score);
